@@ -1,5 +1,6 @@
-.edea
+.idea/
 DS_Store
 .env
 node_modules
-
+script/src/package.json
+script/src/package-lock.json
