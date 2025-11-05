@@ -1,1 +1,9 @@
+# MYSQL CONFIG
+MYSQL_DATABASE="todo"
+MYSQL_HOST=""
+MYSQL_USER=""
+MYSQL_ROOT_PASSWORD=""
 
+# EXPRESS JS CONFIG
+PORT="" # port listen for express js
+SECRET="" # for gen token session
