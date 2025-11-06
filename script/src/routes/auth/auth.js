@@ -5,7 +5,7 @@ const router = express.Router();
 const jwt = require("jsonwebtoken");
 
 function generate_token(req, res, user_id) {
-    const token = jwt.sign({"id": user_id}, "shh");
+    const token = jwt.sign({"id": user_id}, process.env.SECRET);
 
     res.send({"token": token});
 }
@@ -35,7 +35,7 @@ router.post("/register", async(req, res) => {
 
         [result, fields] = await pool.query('INSERT INTO user (id, email, password, name, firstname) VALUES (?, ?, ?, ?, ?)', [id, email, hash, name, firstname])
 
-        res.send(result)
+        generate_token(req, res, id);
     }
 
 
