@@ -10,7 +10,13 @@ app.use(bodyParser.json());
 const auth_routes = require("./routes/auth/auth")
 app.use("/", auth_routes);
 
-// LOAD MIDDLEWARE
+// SYSTEM VERIF TOKEN
+const verif_token = require("./middleware/auth");
+app.use(verif_token);
+
+// HERE ALL NEW ROUTE FOR TODO ACCESS WITH SECURE SYSTEM
+
+// LOAD ERROR HANDLER
 const errorHandler = require("./middleware/errorHandler.js");
 app.use(errorHandler);
 
