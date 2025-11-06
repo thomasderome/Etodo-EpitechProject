@@ -1,0 +1,10 @@
+# MYSQL CONFIG
+MYSQL_DATABASE="etodo"
+MYSQL_HOST=""
+MYSQL_USER=""
+MYSQL_PASSWORD=""
+MYSQL_ROOT_PASSWORD=""
+
+# EXPRESS JS CONFIG
+PORT="" # port listen for express js
+SECRET="" # for gen token session
