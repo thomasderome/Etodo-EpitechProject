@@ -2,6 +2,13 @@ const express = require('express');
 const bcrypt = require('bcryptjs'); // hasheur mdp
 const { pool } = require("../../config/db.js");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
+
+function generate_token(req, res, user_id) {
+    const token = jwt.sign({"id": user_id}, "shh");
+
+    res.send({"token": token});
+}
 
 router.post("/register", async(req, res) => {
     //verif arg
@@ -21,9 +28,11 @@ router.post("/register", async(req, res) => {
 
         [result, fields] = await pool.query('SELECT id FROM user WHERE id=?', [id]);
 
-        while (result.lenght !== (0 || undefined)) {
+        while (result.length !== 0) {
             id = crypto.randomUUID();
+            [result, fields] = await pool.query('SELECT id FROM user WHERE id=?', [id]);
         }
+
         [result, fields] = await pool.query('INSERT INTO user (id, email, password, name, firstname) VALUES (?, ?, ?, ?, ?)', [id, email, hash, name, firstname])
 
         res.send(result)
@@ -37,15 +46,15 @@ router.post("/login", async (req, res) => {
 
     if (!email || typeof email !== "string"
         || !password || typeof password !== "string") throw new TypeError();
+    const [result, fields] = await pool.query('SELECT password, id FROM user WHERE email=?', [email]);
 
-    const [result, fields] = await pool.query('SELECT password FROM user WHERE email=?', [email]);
     if (result.length === 0) res.status(401).send({"msg": "Invalid Credentials"});
     else {
-        const hashedPassword = await bcrypt.hash(result[0].password, 12);
+        const hashedPassword = await bcrypt.hash(password, 12);
         const comparePassword = await bcrypt.compare(password, hashedPassword);
 
         if (comparePassword) {
-            res.send('login');
+            generate_token(req, res, result[0].id);
         } else res.status(401).send({"msg": "Invalid Credentials"});
     }
 })
