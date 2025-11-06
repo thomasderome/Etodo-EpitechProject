@@ -1,7 +1,6 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // hasheur mdp
 const { pool } = require("../../config/db.js");
-const bcrypt = require("bcryptjs"); // hasheur mdp
 const router = express.Router();
 
 router.post("/register", async(req, res) => {
@@ -32,10 +31,6 @@ router.post("/register", async(req, res) => {
 
 
 });
-
-module.exports = router;
-
-const router = express.Router();
 
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
