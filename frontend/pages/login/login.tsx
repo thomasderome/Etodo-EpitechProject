@@ -26,10 +26,14 @@ import {
 import { StarsBackground } from '@/components/animate-ui/components/backgrounds/stars';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
+import instance from "@/lib/axios";
+import {useState} from "react";
 
 interface RippleButtonDemoProps {
     variant: RippleButtonProps['variant'];
     size: RippleButtonProps['size'];
+    type: RippleButtonProps['type'];
+    form: RippleButtonProps['form'];
 }
 
 /* body de la page, tout ce qu'elle contient*/
@@ -45,8 +49,41 @@ export default function LoginPage (){
         </main>
     );
 }
-/*création de la box de connexion et création de compte*/
+/*--- BOX Login / Register ---*/
 export function AnimateTabsDemo() {
+    /* Etats pour login*/
+    const [loginData, setLoginData] = useState({
+        email: '',
+        password: '',
+    });
+
+    /* Etats pour login*/
+    const [registerData, setRegisterData] = useState({
+        name: '',
+        lastname: '',
+        email: '',
+        password: '',
+    })
+
+    //  Gestion des changements d’input
+    const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        setLoginData(prev => ({ ...prev, [id.replace('-login', '')]: value }));
+    };
+
+    const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        setRegisterData(prev => ({ ...prev, [id.replace('-register', '')]: value }));
+    };
+
+    const submitLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log("Login data:", loginData);
+    }
+
+    const submitRegister = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log("Register data:", registerData)
+    }
+
     return (
         <div className="flex w-full max-w-sm flex-col gap-6">
             <Tabs defaultValue="Login">
@@ -55,6 +92,7 @@ export function AnimateTabsDemo() {
                     <TabsTrigger value="register">Register</TabsTrigger>
                 </TabsList>
                 <Card className="shadow-none py-0">
+                    {/* --- Register tab --- */}
                     <TabsContents className="py-6">
                         <TabsContent value="Login" className="flex flex-col gap-6">
                             <CardHeader>
@@ -64,21 +102,24 @@ export function AnimateTabsDemo() {
                                     done.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="grid gap-6">
-                                <div className="grid gap-3">
-                                    <Label htmlFor="tabs-demo-name">Email</Label>
-                                    <Input id="tabs-demo-name" type="email" placeholder="Email" />
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="tabs-demo-name">Password</Label>
-                                    <Input id="tabs-demo-name" type="password" placeholder="Password"/>
-                                </div>
+                            <CardContent>
+                                <form className="grid gap-6" id="formLogin">
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="tabs-demo-name">Email</Label>
+                                        <Input id="email-login" type="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange} />
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="tabs-demo-name">Password</Label>
+                                        <Input id="password-login" type="password" placeholder="Password" value={loginData.password} onChange={handleLoginChange} />
+                                    </div>
+                                </form>
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                < RippleButtonDemo variant={"default"} size={"default"} />
+                                < SubmitButton variant={"default"} size={"default"} type="submit" form="formLogin" />
                             </CardFooter>
                         </TabsContent>
+                        {/* --- Register tab --- */}
                         <TabsContent value="register" className="flex flex-col gap-6">
                             <CardHeader>
                                 <CardTitle>Register</CardTitle>
@@ -86,27 +127,29 @@ export function AnimateTabsDemo() {
                                     Create your account here. After saving, you&apos;ll be login.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="grid gap-6">
-                                <div className="grid gap-3">
-                                    <Label htmlFor="tabs-demo-current">Name</Label>
-                                    <Input id="tabs-demo-current" type="name" placeholder="Name" />
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="tabs-demo-new">Last-name</Label>
-                                    <Input id="tabs-demo-new" type="last-name" placeholder="Last-name" />
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="tabs-demo-new">Email</Label>
-                                    <Input id="tabs-demo-new" type="email" placeholder="Email" />
-                                </div>
-                                <div className="grid gap-3">
-                                    <Label htmlFor="tabs-demo-new">Password</Label>
-                                    <Input id="tabs-demo-new" type="password" placeholder="Password" />
-                                </div>
+                            <CardContent>
+                                <form className="grid gap-6" id="formRegister">
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="tabs-demo-current">Name</Label>
+                                        <Input id="name-register" type="name" placeholder="Name" value={registerData.name} onChange={handleRegisterChange} />
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="tabs-demo-new">Last-name</Label>
+                                        <Input id="lastname-register" type="last-name" placeholder="Last-name" value={registerData.lastname} onChange={handleRegisterChange} />
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="tabs-demo-new">Email</Label>
+                                        <Input id="email-register" type="email" placeholder="Email" value={registerData.email} onChange={handleRegisterChange} />
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="tabs-demo-new">Password</Label>
+                                        <Input id="password-register" type="password" placeholder="Password" value={registerData.password} onChange={handleRegisterChange} />
+                                    </div>
+                                </form>
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                < RippleButtonDemo variant={"default"} size={"default"} />
+                                <SubmitButton variant={"default"} size={"default"}  type="submit" form="formLogin"/>
                             </CardFooter>
                         </TabsContent>
                     </TabsContents>
@@ -134,12 +177,14 @@ export const StarsBackgroundDemo = () => {
 };
 
 /* création du bouton ripple*/
-export function RippleButtonDemo({
+export function SubmitButton({
                                              variant,
                                              size,
+                                            type,
+                                            form,
                                          }: RippleButtonDemoProps) {
     return (
-        <RippleButton variant={variant} size={size}>
+        <RippleButton variant={variant} size={size} type={type} form={form} >
             {size === 'icon' ? <PlusIcon /> : 'Login'}
             <RippleButtonRipples />
         </RippleButton>
