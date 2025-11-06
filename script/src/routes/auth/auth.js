@@ -4,13 +4,6 @@ const { pool } = require("../../config/db.js");
 
 const router = express.Router();
 
-router.post("/temp", async (req, res) => {
-    const password = await bcrypt.hash(req.body.password, 12);
-
-    await pool.query('UPDATE user SET password=?', [password])
-    res.send(password)
-})
-
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
