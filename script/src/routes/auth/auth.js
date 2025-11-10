@@ -13,7 +13,7 @@ function generate_token(req, res, user_id) {
 router.post("/register", async(req, res) => {
     //verif arg
     const {email, password, name, firstname} = req.body;
-
+    console.log(name, email, password, firstname);
     if (typeof email !== "string" || typeof password !== "string" || typeof name !== "string" || typeof firstname !== "string" || !email || !password || !name || !firstname) {
         throw new TypeError();
     }
@@ -43,7 +43,7 @@ router.post("/register", async(req, res) => {
 
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
-
+    console.log(password);
     if (!email || typeof email !== "string"
         || !password || typeof password !== "string") throw new TypeError();
     const [result, fields] = await pool.query('SELECT password, id FROM user WHERE email=?', [email]);

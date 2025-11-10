@@ -2,9 +2,12 @@ require("dotenv").config({path: "../.env"});
 const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
+const cors = require("cors");
 const port = process.env.PORT;
 
+app.use(cors());
 app.use(bodyParser.json());
+
 
 // LOAD AUTH ROUTE
 const auth_routes = require("./routes/auth/auth")

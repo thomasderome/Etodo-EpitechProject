@@ -60,7 +60,7 @@ export function AnimateTabsDemo() {
     /* Etats pour login*/
     const [registerData, setRegisterData] = useState({
         name: '',
-        lastname: '',
+        firstname: '',
         email: '',
         password: '',
     })
@@ -76,15 +76,31 @@ export function AnimateTabsDemo() {
         setRegisterData(prev => ({ ...prev, [id.replace('-register', '')]: value }));
     };
 
-    const submitLogin = (e: React.SyntheticEvent<HTMLFormElement>) => {
+    const submitLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log("Login data:", loginData);
-    }
 
-    const submitRegister = (e: React.SyntheticEvent<HTMLFormElement>) => {
+        instance.post("/login", loginData)
+        .then((res) => {
+            console.log(res);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    };
+
+    const submitRegister = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log("Register data:", registerData)
-    }
+
+        instance.post("/register", registerData)
+            .then((res) => {
+                console.log(res);
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+    };
 
     return (
         <div className="flex w-full max-w-sm flex-col gap-6">
@@ -108,11 +124,11 @@ export function AnimateTabsDemo() {
                                 <form className="grid gap-6" id="formLogin" onSubmit={submitLogin}>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-name">Email</Label>
-                                        <Input id="email-login" type="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange} />
+                                        <Input id="email-login" type="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange} required={true} />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-name">Password</Label>
-                                        <Input id="password-login" type="password" placeholder="Password" value={loginData.password} onChange={handleLoginChange} />
+                                        <Input id="password-login" type="password" placeholder="Password" value={loginData.password} onChange={handleLoginChange} required={true} />
                                     </div>
                                 </form>
                             </CardContent>
@@ -137,7 +153,7 @@ export function AnimateTabsDemo() {
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Last-name</Label>
-                                        <Input id="lastname-register" type="text" placeholder="Last-name" value={registerData.lastname} onChange={handleRegisterChange} required={true} />
+                                        <Input id="firstname-register" type="text" placeholder="First-name" value={registerData.firstname} onChange={handleRegisterChange} required={true} />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Email</Label>
