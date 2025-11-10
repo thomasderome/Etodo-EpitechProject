@@ -70,7 +70,7 @@ const data_source = {
         "avatar": "https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/1/b/8/1b85b9cd9cb10e440991a5f640b7312f7507370e.png",
     },
     "todo": [
-        {"category": false, "title": "test_single", "id": "12412"}
+        {"category": false, "title": "test_single", "id": "12c412", "edit": false}
     ]
 }
 
@@ -84,14 +84,15 @@ export default function Todo_page() {
         if (e.key === "Enter") {
             e.preventDefault();
             e.target.contentEditable = false;
-            setData({...data, todo: [...data.todo, {"category": false, "title": e.target.textContent, "id": e.target.id}]})
+            const filter = [...data.todo.filter((item) => item.id !== e.target.id)];
+            setData({...data, todo: [...filter, {"category": false, "title": e.target.textContent, "id": e.target.id, "edit": false}]});
         }
     }
 
     function add_todo(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
 
-        setData({...data, todo: [...data.todo, {"category": false, "title": "New todo", "id": "12412"}]});
+        setData({...data, todo: [...data.todo, {"category": false, "title": "New todo", "id": "12412", "edit": true}]});
     }
 
     function remove_todo(e) {
@@ -174,7 +175,7 @@ export default function Todo_page() {
                             ) : (
                                 <SidebarMenuItem key={todo_element.id}>
                                     <SidebarMenuButton>
-                                        <span contentEditable={true} onKeyDown={todo_editor_key_analyze} id={todo_element.id}>{todo_element.title}</span>
+                                        <span contentEditable={todo_element.edit} onKeyDown={todo_editor_key_analyze} id={todo_element.id}>{todo_element.title}</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             )
