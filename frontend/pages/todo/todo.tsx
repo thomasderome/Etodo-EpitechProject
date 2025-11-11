@@ -51,6 +51,7 @@ import { LogOut } from '@/components/animate-ui/icons/log-out'
 import { Settings } from '@/components/animate-ui/icons/settings';
 import { ChevronRight} from "@/components/animate-ui/icons/chevron-right";
 import { SquarePlus } from '@/components/animate-ui/icons/square-plus'
+import { Ellipsis } from "@/components/animate-ui/icons/ellipsis";
 
 import {
     Avatar,
@@ -62,6 +63,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { User_label } from "@/pages/todo/User_label";
 import {AnimateIcon} from "@/components/animate-ui/icons/icon";
 import {Button} from "@/components/animate-ui/components/buttons/button";
+import {HighlightItem} from "@/components/animate-ui/primitives/effects/highlight";
+import {Brush} from "@/components/animate-ui/icons/brush";
+import {Trash2} from "@/components/animate-ui/icons/trash-2";
+import {DropdownMenuSub} from "@/components/ui/dropdown-menu";
+import {BrushIcon, TrashIcon} from "lucide-react";
 
 const data_source = {
     "user": {
@@ -75,28 +81,73 @@ const data_source = {
 }
 
 export default function Todo_page() {
+    // ADD SYSTEM FOR GET DATA INITAL AND APPLY
     const [data, setData] = React.useState(data_source);
 
     const isMobile = useIsMobile();
-    const [hover, setHover] = React.useState(false);
 
-    function todo_editor_key_analyze(e) {
-        if (e.key === "Enter") {
+    // AUTO FOCUS SYSTEM CREATION NEW TODO
+    const focus_item = React.useRef(null);
+
+    React.useLayoutEffect(() => {
+        setTimeout(() => {
+            if (focus_item.current) {
+                focus_item.current.focus();
+                focus_item.current.selectionEnd;
+            }
+        }, 10)
+    })
+
+
+    // SYSTEM FOR EXIT AND VALID RENAME TODO
+    function apply_rename(e) {
+        {/* ADD THE REQUEST IN FUTURE FOR API */}
+        if (e.key === "Enter" || !e.key) {
             e.preventDefault();
             e.target.contentEditable = false;
-            const filter = [...data.todo.filter((item) => item.id !== e.target.id)];
-            setData({...data, todo: [...filter, {"category": false, "title": e.target.textContent, "id": e.target.id, "edit": false}]});
+
+            // VERIFIE SI LE TITRE N'EST PAS VIDE AU SINON METTRE CELUI PAR DEFAUT
+            if (!e.target.textContent) e.target.textContent = "New todo";
+
+            // SYSTEM POUR SEND LES MODFIS NAME DE LA TODO
+            // RECUPERE L'ID e.target.id et est son nom e.target.textContent
+            const id_element = e.target.dataset.id;
+            const filter = [...data.todo.filter((item) => item.id !== id_element)];
+            setData({
+                ...data,
+                todo: [...filter, {
+                    "category": false,
+                    "title": e.target.textContent,
+                    "id": e.target.dataset.id,
+                    "edit": false
+                }]
+            });
         }
     }
 
+    // SYSTEM FOR ENABLE RENAME
+    function enable_rename(e) {
+        // SYSTEM TRAVEL THROUGH EACH TODO AND ENABLE EDIT MOD ON SPECIFIC
+        const id_element = e.target.dataset.id;
+        const new_data = data.todo.map((item) => {
+            console.log(id_element)
+            if (item.id == id_element) return {...item, edit: true};
+            else return {...item, edit: false};
+            })
+        setData({...data, todo: [...new_data]});
+    }
+
+    // SYSTEM FOR ADD TODO
     function add_todo(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
-
         setData({...data, todo: [...data.todo, {"category": false, "title": "New todo", "id": "12412", "edit": true}]});
     }
 
     function remove_todo(e) {
-        {/* ADD THE REQUEST FOR DELETE TODO */}
+        {/* ADD THE REQUEST IN FUTURE FOR API */}
+        const id_element = e.target.dataset.id;
+        const filter = [...data.todo.filter((item) => item.id !== id_element)];
+        setData({...data, todo: filter});
     }
 
     return (
@@ -131,8 +182,8 @@ export default function Todo_page() {
 
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem>
-                                                <div className="flex align-middle gap-2 group cursor-pointer" >
-                                                    <LogOut className="h-4 w-4 text-red-600 group-hover"/>
+                                                <div className="flex align-middle gap-2 " >
+                                                    <LogOut className="h-4 w-4 text-red-600 "/>
                                                     <span className="text-sm font-semibold text-red-500">Log out</span>
                                                 </div>
                                             </DropdownMenuItem>
@@ -173,10 +224,35 @@ export default function Todo_page() {
                                     </SidebarMenuItem>
                                 </Collapsible>
                             ) : (
-                                <SidebarMenuItem key={todo_element.id}>
-                                    <SidebarMenuButton>
-                                        <span contentEditable={todo_element.edit} onKeyDown={todo_editor_key_analyze} id={todo_element.id}>{todo_element.title}</span>
+                                <SidebarMenuItem key={todo_element.id} className="flex group">
+                                    <SidebarMenuButton >
+                                        <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-200"
+                                              contentEditable={todo_element.edit}
+                                              ref={todo_element.edit ? focus_item : null}
+                                              onBlur={apply_rename}
+                                              onKeyDown={apply_rename}
+                                              data-id={todo_element.id}
+                                              suppressContentEditableWarning={true}>{todo_element.title}</span>
                                     </SidebarMenuButton>
+                                    <DropdownMenu >
+                                        <DropdownMenuTrigger className="outline-none"><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
+
+                                        <DropdownMenuContent side={isMobile ? 'bottom' : 'left'} align="start">
+                                            <DropdownMenuLabel>Todo Interaction</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={enable_rename} data-id={todo_element.id}>
+                                                    <Brush />
+                                                    <span className="text-xs font-semibold">Rename</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={remove_todo} variant="destructive" data-id={todo_element.id}>
+                                                    <TrashIcon className="text-red-600"/>
+                                                    <span className="text-xs font-semibold text-red-500" >Rename</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </SidebarMenuItem>
                             )
                         ))}
