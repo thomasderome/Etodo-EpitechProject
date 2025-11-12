@@ -5,10 +5,6 @@ import * as React from 'react';
 import {
     Breadcrumb,
     BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -18,9 +14,6 @@ import {
     Sidebar,
     SidebarHeader,
     SidebarContent,
-    SidebarFooter,
-    SidebarRail,
-    SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuItem,
@@ -28,7 +21,6 @@ import {
     SidebarMenuSub,
     SidebarMenuSubItem,
     SidebarMenuSubButton,
-    SidebarMenuAction, SidebarSeparator,
 } from '@/components/animate-ui/components/radix/sidebar';
 import {
     Collapsible,
@@ -42,10 +34,8 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/animate-ui/components/radix/dropdown-menu';
-import {IconButton} from "@/components/animate-ui/components/buttons/icon";
 
 import { LogOut } from '@/components/animate-ui/icons/log-out'
 import { Settings } from '@/components/animate-ui/icons/settings';
@@ -53,21 +43,11 @@ import { ChevronRight} from "@/components/animate-ui/icons/chevron-right";
 import { SquarePlus } from '@/components/animate-ui/icons/square-plus'
 import { Ellipsis } from "@/components/animate-ui/icons/ellipsis";
 
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { User_label } from "@/pages/todo/User_label";
-import {AnimateIcon} from "@/components/animate-ui/icons/icon";
-import {Button} from "@/components/animate-ui/components/buttons/button";
-import {HighlightItem} from "@/components/animate-ui/primitives/effects/highlight";
 import {Brush} from "@/components/animate-ui/icons/brush";
 import {Trash2} from "@/components/animate-ui/icons/trash-2";
-import {DropdownMenuSub} from "@/components/ui/dropdown-menu";
-import {BrushIcon, TrashIcon} from "lucide-react";
 
 const data_source = {
     "user": {
@@ -84,56 +64,67 @@ export default function Todo_page() {
     // ADD SYSTEM FOR GET DATA INITAL AND APPLY
     const [data, setData] = React.useState(data_source);
 
+    // DETECT IF MOBILE VESION
     const isMobile = useIsMobile();
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
     const focus_item = React.useRef(null);
-
     React.useLayoutEffect(() => {
-        setTimeout(() => {
-            if (focus_item.current) {
-                focus_item.current.focus();
-                focus_item.current.selectionEnd;
-            }
-        }, 10)
-    })
+        if (focus_item.current) {
+            focus_item.current.focus();
 
+            const range = document.createRange();
+            // SELECT THE ELEMENT FOR CHANGE THE RANGE
+            range.selectNodeContents(focus_item.current);
+            // SET THE CURSOR TO THE END
+            range.collapse(false);
+
+            const sel = window.getSelection();
+            // REMOVE THE PLACEMENT OF CURRENT CURSOR
+            sel.removeAllRanges();
+            // SET THE NEW RANGE OF CURSOR
+            sel.addRange(range);
+        }
+
+    })
 
     // SYSTEM FOR EXIT AND VALID RENAME TODO
     function apply_rename(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         if (e.key === "Enter" || !e.key) {
             e.preventDefault();
-            e.target.contentEditable = false;
+            e.currentTarget.contentEditable = false;
 
             // VERIFIE SI LE TITRE N'EST PAS VIDE AU SINON METTRE CELUI PAR DEFAUT
-            if (!e.target.textContent) e.target.textContent = "New todo";
+            if (!e.currentTarget.textContent) e.currentTarget.textContent = "New todo";
 
             // SYSTEM POUR SEND LES MODFIS NAME DE LA TODO
             // RECUPERE L'ID e.target.id et est son nom e.target.textContent
-            const id_element = e.target.dataset.id;
-            const filter = [...data.todo.filter((item) => item.id !== id_element)];
-            setData({
-                ...data,
-                todo: [...filter, {
-                    "category": false,
-                    "title": e.target.textContent,
-                    "id": e.target.dataset.id,
-                    "edit": false
-                }]
-            });
+            const id_element = e.currentTarget.dataset.id;
+            const new_data = data.todo.map((item) => {
+                if (item.id == id_element) return {...item, "title": e.currentTarget.textContent, edit: false};
+                else return {...item};
+            })
+
+            setData({...data, todo:[...new_data]});
         }
     }
 
     // SYSTEM FOR ENABLE RENAME
-    function enable_rename(e) {
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function enable_rename(e) {
         // SYSTEM TRAVEL THROUGH EACH TODO AND ENABLE EDIT MOD ON SPECIFIC
-        const id_element = e.target.dataset.id;
+        const id_element = e.currentTarget.dataset.id;
+        console.log(id_element)
         const new_data = data.todo.map((item) => {
-            console.log(id_element)
             if (item.id == id_element) return {...item, edit: true};
             else return {...item, edit: false};
-            })
+        })
+
+        await sleep(10);
         setData({...data, todo: [...new_data]});
     }
 
@@ -145,7 +136,7 @@ export default function Todo_page() {
 
     function remove_todo(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
-        const id_element = e.target.dataset.id;
+        const id_element = e.currentTarget.dataset.id;
         const filter = [...data.todo.filter((item) => item.id !== id_element)];
         setData({...data, todo: filter});
     }
@@ -237,7 +228,7 @@ export default function Todo_page() {
                                     <DropdownMenu >
                                         <DropdownMenuTrigger className="outline-none"><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
 
-                                        <DropdownMenuContent side={isMobile ? 'bottom' : 'left'} align="start">
+                                        <DropdownMenuContent side={isMobile ? 'bottom' : 'left'} align="start" onCloseAutoFocus={(e) => {e.preventDefault();}}>
                                             <DropdownMenuLabel>Todo Interaction</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
 
@@ -247,7 +238,7 @@ export default function Todo_page() {
                                                     <span className="text-xs font-semibold">Rename</span>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={remove_todo} variant="destructive" data-id={todo_element.id}>
-                                                    <TrashIcon className="text-red-600"/>
+                                                    <Trash2 className="text-red-600"/>
                                                     <span className="text-xs font-semibold text-red-500" >Rename</span>
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
