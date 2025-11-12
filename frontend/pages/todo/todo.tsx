@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 import {
     Breadcrumb,
@@ -46,8 +47,20 @@ import { Ellipsis } from "@/components/animate-ui/icons/ellipsis";
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { User_label } from "@/pages/todo/User_label";
-import {Brush} from "@/components/animate-ui/icons/brush";
-import {Trash2} from "@/components/animate-ui/icons/trash-2";
+import { Brush } from "@/components/animate-ui/icons/brush";
+import { Trash2 } from "@/components/animate-ui/icons/trash-2";
+import {
+    Dialog,
+    DialogPanel,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose
+} from "@/components/animate-ui/components/headless/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const data_source = {
     "user": {
@@ -64,8 +77,16 @@ export default function Todo_page() {
     // ADD SYSTEM FOR GET DATA INITAL AND APPLY
     const [data, setData] = React.useState(data_source);
 
-    // DETECT IF MOBILE VESION
+    // VARIABLE SYSTEM
     const isMobile = useIsMobile();
+
+    const [setting_open, setting_set] = React.useState(false);
+    const [data_setting, set_data_setting] = React.useState({
+        "name": "test",
+        "last_name": "test",
+        "email": "dsq",
+        "password": ""
+    })
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
     const focus_item = React.useRef(null);
@@ -141,56 +162,101 @@ export default function Todo_page() {
         setData({...data, todo: filter});
     }
 
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    }
+
+    function setting() {
+        setting_set(true);
+
+    }
+
     return (
-        <SidebarProvider style={{ "--sidebar-width-icon": "0px"}}>
-            <Sidebar collapsible="icon">
-
-                {/* HEAD SIDEBAR USER */}
-                <SidebarHeader>
-
-                </SidebarHeader>
-                <SidebarContent className="ml-2">
-                    <SidebarMenuItem>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                                            <User_label name={data.user.name} image={data.user.avatar} email={data.user.email} />
-                                        </SidebarMenuButton>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mt-2"
-                                                         side={isMobile ? 'bottom' : 'left'}
-                                                         sideOffset={4}>
-                                        {/* Add onclick in futur */}
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem>
-                                                <div className="flex align-middle gap-2" >
-                                                    <Settings />
-                                                    <span className="text-sm font-semibold">Settings</span>
-                                                </div>
-                                            </DropdownMenuItem>
-
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem>
-                                                <div className="flex align-middle gap-2 " >
-                                                    <LogOut className="h-4 w-4 text-red-600 "/>
-                                                    <span className="text-sm font-semibold text-red-500">Log out</span>
-                                                </div>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarMenuItem>
-                    <Separator />
-                    <SidebarGroupLabel>
-                        <div className="flex">
-                            <span className="text-sm">Todo</span>
-                            <SquarePlus animateOnHover onClick={add_todo} className="ml-auto stroke-ring h-5" />
+        <>
+            <Dialog open={setting_open} onClose={() => setting_set(false)} className="relative z-[50]">
+                <DialogPanel>
+                    <form>
+                        <DialogHeader>
+                            <DialogTitle>Account setting</DialogTitle>
+                        </DialogHeader>
+                        <div className="m-2 flex">
+                            <div className="text-sm p-2">
+                                <Label className="font-semibold p-1">Name:</Label>
+                                <Input type="text" value={data_setting.name} onChange={(e) => set_data_setting({...data_setting, "name": e.currentTarget.value})} required/>
+                            </div>
+                            <div className="text-sm p-2">
+                                <Label className="font-semibold p-1">Last-name:</Label>
+                                <Input type="text" value={data_setting.last_name} onChange={(e) => set_data_setting({...data_setting, "last_name": e.currentTarget.value})} required></Input>
+                            </div>
                         </div>
-                    </SidebarGroupLabel>
+                        <div className="m-2 flex">
+                            <div className="text-sm p-2">
+                                <Label className="font-semibold p-1">Email:</Label>
+                                <Input type="email" value={data_setting.email} onChange={(e) => set_data_setting({...data_setting, "email": e.currentTarget.value})} required/>
+                            </div>
+                            <div className="text-sm p-2">
+                                <Label className="font-semibold p-1">Password:</Label>
+                                <Input type="password" value={data_setting.password} onChange={(e) => set_data_setting({...data_setting, "password": e.currentTarget.value})} required/>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={() => setting_set(false)} variant="outline">Cancel</Button>
+                            <Button onClick={apply_rename} type="submit">Save changes</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogPanel>
+            </Dialog>
+
+            <SidebarProvider style={{ "--sidebar-width-icon": "0px"}}>
+                <Sidebar collapsible="icon">
+
+                    {/* HEAD SIDEBAR USER */}
+                    <SidebarHeader>
+
+                    </SidebarHeader>
+                    <SidebarContent className="ml-2">
+                        <SidebarMenuItem>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                                                <User_label name={data.user.name} image={data.user.avatar} email={data.user.email} />
+                                            </SidebarMenuButton>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mt-2"
+                                                             side={isMobile ? 'bottom' : 'left'}
+                                                             sideOffset={4}>
+                                            {/* Add onclick in futur */}
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem onClick={setting}>
+                                                    <div className="flex align-middle gap-2" >
+                                                        <Settings />
+                                                        <span className="text-sm font-semibold">Settings</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={logout}>
+                                                    <div className="flex align-middle gap-2 " >
+                                                        <LogOut className="h-4 w-4 text-red-600 "/>
+                                                        <span className="text-sm font-semibold text-red-500">Logout</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarMenuItem>
+                        <Separator />
+                        <SidebarGroupLabel>
+                            <div className="flex">
+                                <span className="text-sm">Todo</span>
+                                <SquarePlus animateOnHover onClick={add_todo} className="ml-auto stroke-ring h-5" />
+                            </div>
+                        </SidebarGroupLabel>
                         {data.todo.map((todo_element) => (
                             todo_element.category ? (
                                 <Collapsible asChild className="group/collapsible" key={todo_element.id}>
@@ -247,18 +313,19 @@ export default function Todo_page() {
                                 </SidebarMenuItem>
                             )
                         ))}
-                </SidebarContent>
-            </Sidebar>
-            <SidebarInset>
-                <header className="">
-                    <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-                        <Breadcrumb>
-                            <BreadcrumbItem>Name of todo</BreadcrumbItem>
-                        </Breadcrumb>
-                    </div>
-                </header>
-            </SidebarInset>
-        </SidebarProvider>
+                    </SidebarContent>
+                </Sidebar>
+                <SidebarInset>
+                    <header className="">
+                        <div className="flex items-center gap-2 px-4">
+                            <SidebarTrigger className="-ml-1" />
+                            <Breadcrumb>
+                                <BreadcrumbItem>Name of todo</BreadcrumbItem>
+                            </Breadcrumb>
+                        </div>
+                    </header>
+                </SidebarInset>
+            </SidebarProvider>
+        </>
     );
 };
