@@ -37,21 +37,18 @@ router.post("/register", async(req, res) => {
 
         generate_token(req, res, id);
     }
-
-
 });
 
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(password);
+
     if (!email || typeof email !== "string"
         || !password || typeof password !== "string") throw new TypeError();
     const [result, fields] = await pool.query('SELECT password, id FROM user WHERE email=?', [email]);
 
     if (result.length === 0) res.status(401).send({"msg": "Invalid Credentials"});
     else {
-        const hashedPassword = await bcrypt.hash(password, 12);
-        const comparePassword = await bcrypt.compare(password, hashedPassword);
+        const comparePassword = await bcrypt.compare(password, result[0].password);
 
         if (comparePassword) {
             generate_token(req, res, result[0].id);
