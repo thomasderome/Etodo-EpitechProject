@@ -74,8 +74,15 @@ const data_source = {
 export default function Todo_page() {
     // ADD SYSTEM FOR GET DATA INITAL AND APPLY
     const [data, setData] = React.useState(data_source);
+    const [todo_data, set_todo_data] = React.useState([]);
 
-    const [todo_data, set_todo_data] = React.useState();
+    useEffect(() => {
+        instance.get("/todos").then(response => {
+            set_todo_data(response.data);
+        });
+    }, []);
+
+
     const [user_data, set_user_data] = React.useState();
     const [settings_data, set_setting_data] = React.useState();
 
@@ -114,7 +121,7 @@ export default function Todo_page() {
     })
 
     // SYSTEM FOR EXIT AND VALID RENAME TODO
-    function apply_rename(e) {
+    async function apply_rename(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         if (e.key === "Enter" || !e.key) {
             e.preventDefault();
@@ -127,22 +134,19 @@ export default function Todo_page() {
             // RECUPERE L'ID e.target.id et est son nom e.target.textContent
             const id_todo = e.currentTarget.dataset.id;
 
-            const new_data = todo_data.map((item: {}) => {
+            const promise = todo_data.map(async (item: {}) => {
                 if (item.id == id_todo) {
-                    instance.put(`/todos/${id_todo}`, {
+                    const res = await instance.put(`/todos/${id_todo}`, {
                         ...item,
+                        "due_time": item.due_time.slice(0, 19).replace('T', ' '),
                         "title": e.currentTarget.textContent
                     })
-                        .then((res) => {
-                            return {...item, "title": e.currentTarget.textContent, edit: false};
-                        })
-                        .catch((err) => {
-                            alert("Failed to rename");
-                        })
+                    return {...res.data}
                 }
                 else return {...item};
             })
-            setData(new_data);
+            const new_data = await Promise.all(promise);
+            set_todo_data(new_data);
         }
     }
 
@@ -154,14 +158,15 @@ export default function Todo_page() {
     async function enable_rename(e) {
         // SYSTEM TRAVEL THROUGH EACH TODO AND ENABLE EDIT MOD ON SPECIFIC
         const id_element = e.currentTarget.dataset.id;
-        console.log(id_element)
-        const new_data = data.todo.map((item) => {
-            if (item.id == id_element) return {...item, edit: true};
+
+        const new_data = todo_data.map((item) => {
+            if (String(item.id) == id_element) return {...item, edit: true};
             else return {...item, edit: false};
         })
 
-        await sleep(10);
-        setData({...data, todo: [...new_data]});
+        await sleep(100);
+        console.log(todo_data)
+        set_todo_data(new_data);
     }
 
     // SYSTEM FOR ADD TODO
@@ -171,8 +176,9 @@ export default function Todo_page() {
 
         instance.post("/todos", {
             "title": "New todo",
-            "description": "Noe description",
-            "due_time": `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+            "description": "No description",
+            "due_time": `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+            "status": "todo"
         })
             .then(res => {
                 set_todo_data([...todo_data, {...res.data, "edit": true}]);
@@ -182,11 +188,19 @@ export default function Todo_page() {
             })
     }
 
-    function remove_todo(e) {
+    async function remove_todo(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         const id_element = e.currentTarget.dataset.id;
-        const filter = [...data.todo.filter((item) => item.id !== id_element)];
-        setData({...data, todo: filter});
+
+        await instance.delete(`/todos/${id_element}`)
+            .then(res => {
+                console.log(todo_data)
+                const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
+                set_todo_data([...filter]);
+            })
+            .catch(err => {
+                alert("Failed for remove todo");
+            })
     }
 
     function logout() {
@@ -288,8 +302,8 @@ export default function Todo_page() {
                                 <SidebarMenuItem key={todo_element.id} className="flex group">
                                     <SidebarMenuButton >
                                         <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-200"
-                                              contentEditable={todo_element.edit}
-                                              ref={todo_element.edit ? focus_item : null}
+                                              contentEditable={todo_element?.edit ? todo_element.edit : false}
+                                              ref={todo_element?.edit ? focus_item : null}
                                               onBlur={apply_rename}
                                               onKeyDown={apply_rename}
                                               data-id={todo_element.id}
@@ -309,7 +323,7 @@ export default function Todo_page() {
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={remove_todo} variant="destructive" data-id={todo_element.id}>
                                                     <Trash2 className="text-red-600"/>
-                                                    <span className="text-xs font-semibold text-red-500" >Rename</span>
+                                                    <span className="text-xs font-semibold text-red-500" >Remove</span>
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
