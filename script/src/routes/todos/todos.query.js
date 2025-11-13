@@ -12,7 +12,7 @@ async function viewTodo(todoID, userID){
 
 async function createTodo(data){
     const [rows] = await pool.query("INSERT INTO todo (title, description, due_time, user_id, status) VALUES (?, ?, ?, ?, ?)", [data.title, data.description, data.due_time, data.user_id, data.status])
-    return rows[0];
+    return rows;
 }
 
 async function updateTodo(data){

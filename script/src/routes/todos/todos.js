@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const {displayTodos, viewTodo, createTodo, updateTodo, deleteTodo} = require("./todos.query.js")
 
-
 router.get("/todos", async(req , res ) => {
     const todos = await displayTodos(req.user_id);
 
@@ -31,13 +30,15 @@ router.post("/todos", async(req, res) =>{
             user_id : req.user_id,
             status: status
     })
-    const todos = await displayTodos(req.user_id);
+
+    const todos = await viewTodo(newTodo.insertId, req.user_id);
     res.send(todos);
 })
 
 router.put("/todos/:id", async(req, res) =>{
     const {title, description, due_time, status} = req.body;
     const todoId = req.params.id;
+
     const updatetodo = await updateTodo({
         title: title,
         description: description,
@@ -46,8 +47,8 @@ router.put("/todos/:id", async(req, res) =>{
         status: status,
         todo_id: todoId
     })
-    const todo = await viewTodo(req.params.id, req.user_id);
 
+    const todo = await viewTodo(req.params.id, req.user_id);
     if (todo) {
         res.send(todo)
     } else {
