@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
+import instance from "@/lib/axios";
 
 import {
     Breadcrumb,
@@ -23,11 +24,7 @@ import {
     SidebarMenuSubItem,
     SidebarMenuSubButton,
 } from '@/components/animate-ui/components/radix/sidebar';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/animate-ui/primitives/radix/collapsible';
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -61,6 +58,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {useEffect} from "react";
 
 const data_source = {
     "user": {
@@ -76,6 +74,10 @@ const data_source = {
 export default function Todo_page() {
     // ADD SYSTEM FOR GET DATA INITAL AND APPLY
     const [data, setData] = React.useState(data_source);
+
+    const [todo_data, set_todo_data] = React.useState();
+    const [user_data, set_user_data] = React.useState();
+    const [settings_data, set_setting_data] = React.useState();
 
     // VARIABLE SYSTEM
     const isMobile = useIsMobile();
@@ -101,10 +103,12 @@ export default function Todo_page() {
             range.collapse(false);
 
             const sel = window.getSelection();
-            // REMOVE THE PLACEMENT OF CURRENT CURSOR
-            sel.removeAllRanges();
-            // SET THE NEW RANGE OF CURSOR
-            sel.addRange(range);
+            if (sel) {
+                // REMOVE THE PLACEMENT OF CURRENT CURSOR
+                sel.removeAllRanges();
+                // SET THE NEW RANGE OF CURSOR
+                sel.addRange(range);
+            }
         }
 
     })
@@ -121,13 +125,24 @@ export default function Todo_page() {
 
             // SYSTEM POUR SEND LES MODFIS NAME DE LA TODO
             // RECUPERE L'ID e.target.id et est son nom e.target.textContent
-            const id_element = e.currentTarget.dataset.id;
-            const new_data = data.todo.map((item) => {
-                if (item.id == id_element) return {...item, "title": e.currentTarget.textContent, edit: false};
+            const id_todo = e.currentTarget.dataset.id;
+
+            const new_data = todo_data.map((item: {}) => {
+                if (item.id == id_todo) {
+                    instance.put(`/todos/${id_todo}`, {
+                        ...item,
+                        "title": e.currentTarget.textContent
+                    })
+                        .then((res) => {
+                            return {...item, "title": e.currentTarget.textContent, edit: false};
+                        })
+                        .catch((err) => {
+                            alert("Failed to rename");
+                        })
+                }
                 else return {...item};
             })
-
-            setData({...data, todo:[...new_data]});
+            setData(new_data);
         }
     }
 
@@ -152,7 +167,19 @@ export default function Todo_page() {
     // SYSTEM FOR ADD TODO
     function add_todo(e) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
-        setData({...data, todo: [...data.todo, {"category": false, "title": "New todo", "id": "12412", "edit": true}]});
+        const date = new Date();
+
+        instance.post("/todos", {
+            "title": "New todo",
+            "description": "Noe description",
+            "due_time": `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+        })
+            .then(res => {
+                set_todo_data([...todo_data, {...res.data, "edit": true}]);
+            })
+            .catch(err => {
+                alert("Failed create todo");
+            })
     }
 
     function remove_todo(e) {
@@ -164,7 +191,7 @@ export default function Todo_page() {
 
     function logout() {
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        window.location.href = "/login/login";
     }
 
     function setting() {
@@ -257,30 +284,7 @@ export default function Todo_page() {
                                 <SquarePlus animateOnHover onClick={add_todo} className="ml-auto stroke-ring h-5" />
                             </div>
                         </SidebarGroupLabel>
-                        {data.todo.map((todo_element) => (
-                            todo_element.category ? (
-                                <Collapsible asChild className="group/collapsible" key={todo_element.id}>
-                                    <SidebarMenuItem>
-                                        <CollapsibleTrigger asChild>
-                                            <SidebarMenuButton>
-                                                {todo_element.title}
-                                                <ChevronRight animateOnHover className="ml-auto transition-transform duration-300 group-data-[state=open]/collapsible:rotate-90" />
-                                            </SidebarMenuButton>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <SidebarMenuSub>
-                                                {todo_element.child_cat.map((todo_cat_element) => (
-                                                    <SidebarMenuSubItem key={todo_cat_element.id}>
-                                                        <SidebarMenuSubButton>
-                                                            <span>{todo_cat_element.title}</span>
-                                                        </SidebarMenuSubButton>
-                                                    </SidebarMenuSubItem>
-                                                ))}
-                                            </SidebarMenuSub>
-                                        </CollapsibleContent>
-                                    </SidebarMenuItem>
-                                </Collapsible>
-                            ) : (
+                        {todo_data.map((todo_element) => (
                                 <SidebarMenuItem key={todo_element.id} className="flex group">
                                     <SidebarMenuButton >
                                         <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-200"
@@ -311,7 +315,6 @@ export default function Todo_page() {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </SidebarMenuItem>
-                            )
                         ))}
                     </SidebarContent>
                 </Sidebar>
