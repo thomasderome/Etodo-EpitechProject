@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {displayTodos, viewTodo, createTodo, updateTodo} = require("./todos.query.js")
+const {displayTodos, viewTodo, createTodo, updateTodo, deleteTodo} = require("./todos.query.js")
 
 
 router.get("/todos", async(req , res ) => {
@@ -56,7 +56,12 @@ router.put("/todos/:id", async(req, res) =>{
 })
 
 router.delete("/todos/:id", async(req, res) =>{
-
+    const todoDelete = await deleteTodo(req.params.id)
+    if (todoDelete) {
+        res.send({msg: `Successfully deleted record number : ${req.params.id}`});
+    } else {
+        res.status(403).send()
+    }
 })
 
 module.exports = router;

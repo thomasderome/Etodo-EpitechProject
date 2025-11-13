@@ -22,4 +22,9 @@ async function updateTodo(data){
     return rows[0];
 }
 
-module.exports = {displayTodos, viewTodo, createTodo, updateTodo}
+async function deleteTodo(todoID){
+    const [rows] = await pool.query("DELETE FROM todo WHERE id=?", [todoID]);
+    return rows;
+}
+
+module.exports = {displayTodos, viewTodo, createTodo, updateTodo, deleteTodo}
