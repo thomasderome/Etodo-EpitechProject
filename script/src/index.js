@@ -20,7 +20,7 @@ app.use("/todos", verif_token, todos_routes, );
 
 // HERE ALL NEW ROUTE FOR USER ACCESS
 const user_routes = require("./routes/user/user");
-app.use("/", user_routes);
+app.use("/user", verif_token, user_routes);
 
 // LOAD ERROR HANDLER
 const errorHandler = require("./middleware/errorHandler.js");
