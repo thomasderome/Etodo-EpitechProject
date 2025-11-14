@@ -30,7 +30,7 @@ import instance from "@/lib/axios";
 import {FormEvent, useState} from "react";
 
 interface RippleButtonDemoProps {
-    variant: RippleButtonProps['variant'];
+    variant: "login" | "register";
     size: RippleButtonProps['size'];
     type: RippleButtonProps['type'];
     form: RippleButtonProps['form'];
@@ -136,7 +136,7 @@ export function AnimateTabsDemo() {
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                < SubmitButton variant={"default"} size={"default"} type="submit" form="formLogin" />
+                                < SubmitButton variant={"login"} size={"default"} type="submit" form="formLogin" />
                             </CardFooter>
                         </TabsContent>
                         {/* --- Register tab --- */}
@@ -155,7 +155,7 @@ export function AnimateTabsDemo() {
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Last-name</Label>
-                                        <Input id="firstname-register" type="text" placeholder="First-name" value={registerData.firstname} onChange={handleRegisterChange} required={true} />
+                                        <Input id="firstname-register" type="text" placeholder="Firstname" value={registerData.firstname} onChange={handleRegisterChange} required={true} />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Email</Label>
@@ -169,7 +169,7 @@ export function AnimateTabsDemo() {
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                <SubmitButton variant={"default"} size={"default"}  type="submit" form="formRegister" />
+                                <SubmitButton variant={"register"} size={"default"}  type="submit" form="formRegister" />
                             </CardFooter>
                         </TabsContent>
                     </TabsContents>
@@ -204,8 +204,8 @@ export function SubmitButton({
                                             form,
                                          }: RippleButtonDemoProps) {
     return (
-        <RippleButton variant={variant} size={size} type={type} form={form} >
-            {size === 'icon' ? <PlusIcon /> : 'Login'}
+        <RippleButton variant={"default"} size={size} type={type} form={form} >
+            {variant === "login" ? "Login" : "Register"}
             <RippleButtonRipples />
         </RippleButton>
     );
