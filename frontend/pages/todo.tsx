@@ -38,7 +38,7 @@ import { Ellipsis } from "@/components/animate-ui/icons/ellipsis";
 
 import { useIsMobile } from '@/hooks/use-mobile';
 
-import { User_label } from "@/pages/todo/User_label";
+import { User_label } from "@/components/User_label";
 import { Brush } from "@/components/animate-ui/icons/brush";
 import { Trash2 } from "@/components/animate-ui/icons/trash-2";
 import {
@@ -93,7 +93,7 @@ export default function Todo_page() {
         }).catch((e) => {
             if (e.status === 403) {
                 localStorage.removeItem("token");
-                window.location.href = "/login/login";
+                window.location.href = "/login";
             } else {
                 alert("Failed to load todo");
             }
@@ -215,7 +215,7 @@ export default function Todo_page() {
 
     function logout() {
         localStorage.removeItem("token");
-        window.location.href = "/login/login";
+        window.location.href = "/login";
     }
 
     function setting() {
