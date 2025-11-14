@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { createPortal } from 'react-dom';
 import instance from "@/lib/axios";
 
 import {
@@ -20,9 +19,6 @@ import {
     SidebarMenu,
     SidebarMenuItem,
     SidebarMenuButton,
-    SidebarMenuSub,
-    SidebarMenuSubItem,
-    SidebarMenuSubButton,
 } from '@/components/animate-ui/components/radix/sidebar';
 
 import {
@@ -37,7 +33,6 @@ import {
 
 import { LogOut } from '@/components/animate-ui/icons/log-out'
 import { Settings } from '@/components/animate-ui/icons/settings';
-import { ChevronRight} from "@/components/animate-ui/icons/chevron-right";
 import { SquarePlus } from '@/components/animate-ui/icons/square-plus'
 import { Ellipsis } from "@/components/animate-ui/icons/ellipsis";
 
@@ -51,9 +46,7 @@ import {
     DialogPanel,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
     DialogFooter,
-    DialogClose
 } from "@/components/animate-ui/components/headless/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,11 +65,28 @@ const data_source = {
     ]
 }
 
-export default function Todo_page() {
-    // ADD SYSTEM FOR GET DATA INITAL AND APPLY
-    const [data, setData] = React.useState(data_source);
-    const [todo_data, set_todo_data] = React.useState([]);
+interface TodoItem {
+    "id": number;
+    title: string;
+    description: string;
+    createdAt: string;
+    due_time: string;
+    status: string;
+    user_id: string;
+    edit: boolean;
+}
 
+
+export default function Todo_page() {
+    const isMobile = useIsMobile();
+
+    const [data, setData] = React.useState(data_source);
+
+    const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
+
+    const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
+
+    // LOAD PAGE INFORMATION
     useEffect(() => {
         instance.get("/todos").then(response => {
             set_todo_data(response.data);
@@ -90,9 +100,6 @@ export default function Todo_page() {
         })
     }, []);
 
-    // VARIABLE SYSTEM
-    const isMobile = useIsMobile();
-
     const [setting_open, setting_set] = React.useState(false);
     const [data_setting, set_data_setting] = React.useState({
         "name": "test",
@@ -102,7 +109,7 @@ export default function Todo_page() {
     })
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
-    const focus_item = React.useRef(null);
+    const focus_item: RefObject<HTMLSpanElement> = React.useRef(null);
     React.useLayoutEffect(() => {
         if (focus_item.current) {
             focus_item.current.focus();
@@ -120,12 +127,13 @@ export default function Todo_page() {
                 // SET THE NEW RANGE OF CURSOR
                 sel.addRange(range);
             }
+            focus_item.current.focus();
         }
 
     })
 
     // SYSTEM FOR EXIT AND VALID RENAME TODO
-    async function apply_rename(e) {
+    async function apply_rename(e: React.MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLButtonElement>) {
         if (e.key === "Enter" || !e.key) {
             e.preventDefault();
             e.currentTarget.contentEditable = false;
@@ -137,7 +145,7 @@ export default function Todo_page() {
             // RECUPERE L'ID e.target.id et est son nom e.target.textContent
             const id_todo = e.currentTarget.dataset.id;
 
-            const promise = todo_data.map(async (item: {}) => {
+            const promise = todo_data.map(async (item) => {
                 if (item.id == id_todo) {
                     const res = await instance.put(`/todos/${id_todo}`, {
                         ...item,
@@ -154,11 +162,11 @@ export default function Todo_page() {
     }
 
     // SYSTEM FOR ENABLE RENAME
-    function sleep(ms) {
+    function sleep(ms: number) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function enable_rename(e) {
+    async function enable_rename(e: MouseEvent<HTMLDivElement, MouseEvent>) {
         // SYSTEM TRAVEL THROUGH EACH TODO AND ENABLE EDIT MOD ON SPECIFIC
         const id_element = e.currentTarget.dataset.id;
 
@@ -168,12 +176,11 @@ export default function Todo_page() {
         })
 
         await sleep(100);
-        console.log(todo_data)
         set_todo_data(new_data);
     }
 
     // SYSTEM FOR ADD TODO
-    function add_todo(e) {
+    function add_todo() {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         const date = new Date();
 
@@ -191,7 +198,7 @@ export default function Todo_page() {
             })
     }
 
-    async function remove_todo(e) {
+    async function remove_todo(e: MouseEvent<HTMLDivElement, MouseEvent>) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         const id_element = e.currentTarget.dataset.id;
 
@@ -212,8 +219,11 @@ export default function Todo_page() {
     }
 
     function setting() {
-        setting_set(true);
+        set_sidebar_state(false);
 
+        setTimeout(() => {
+            setting_set(true);
+        }, 150);
     }
 
     return (
@@ -245,14 +255,14 @@ export default function Todo_page() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button onClick={() => setting_set(false)} variant="outline">Cancel</Button>
+                            <Button onClick={() => setting_set(false)} type="button" variant="outline">Cancel</Button>
                             <Button onClick={apply_rename} type="submit">Save changes</Button>
                         </DialogFooter>
                     </form>
                 </DialogPanel>
             </Dialog>
 
-            <SidebarProvider style={{ "--sidebar-width-icon": "0px"}}>
+            <SidebarProvider  style={{ "--sidebar-width-icon": "0px"}} onOpenChange={(state) => set_sidebar_state(state)} open={sidebar_state}>
                 <Sidebar collapsible="icon">
 
                     {/* HEAD SIDEBAR USER */}
@@ -271,7 +281,8 @@ export default function Todo_page() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mt-2"
                                                              side={isMobile ? 'bottom' : 'left'}
-                                                             sideOffset={4}>
+                                                             sideOffset={4}
+                                                             onCloseAutoFocus={(e) => {e.preventDefault();}}>
                                             {/* Add onclick in futur */}
                                             <DropdownMenuGroup>
                                                 <DropdownMenuItem onClick={setting}>
@@ -304,21 +315,23 @@ export default function Todo_page() {
                         {todo_data.map((todo_element) => (
                                 <SidebarMenuItem key={todo_element.id} className="flex group">
                                     <SidebarMenuButton>
-                                        <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-200"
+                                        <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-54"
                                               contentEditable={todo_element?.edit ? todo_element.edit : false}
                                               ref={todo_element?.edit ? focus_item : null}
-                                              onBlur={apply_rename}
                                               onKeyDown={apply_rename}
+                                              onBlur={apply_rename}
                                               data-id={todo_element.id}
                                               suppressContentEditableWarning={true}>{todo_element.title}</span>
-                                        { todo_element.status === 'in progress' ? (
-                                            <Loader animateOnHover={true}/>
-                                            ) : todo_element.status === 'done' ? (
-                                                <CircleCheck animateOnHover={true} />
-                                            ): null }
                                     </SidebarMenuButton>
-                                    <DropdownMenu >
-                                        <DropdownMenuTrigger className="outline-none"><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
+
+                                    { todo_element.status === 'in progress' ? (
+                                        <Loader animateOnHover={true} className="w-4 mr-2" />
+                                    ) : todo_element.status === 'done' ? (
+                                        <CircleCheck animateOnHover={true} className="w-4 mr-2" />
+                                    ): null }
+
+                                    <DropdownMenu modal={false}>
+                                        <DropdownMenuTrigger className="outline-none" onFocus={(e) => {e.preventDefault()}}><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
 
                                         <DropdownMenuContent side={isMobile ? 'bottom' : 'left'} align="start" onCloseAutoFocus={(e) => {e.preventDefault();}}>
                                             <DropdownMenuLabel>Todo Interaction</DropdownMenuLabel>
