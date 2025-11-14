@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const {displayTodos, viewTodo, createTodo, updateTodo, deleteTodo} = require("./todos.query.js")
 
-router.get("/todos", async(req , res ) => {
+router.get("/", async(req , res ) => {
     const todos = await displayTodos(req.user_id);
 
     res.send(todos);
 })
 
-router.get("/todos/:id", async(req , res ) => {
+router.get("/:id", async(req , res ) => {
     const todo = await viewTodo(req.params.id, req.user_id);
 
     if (todo) {
@@ -18,7 +18,7 @@ router.get("/todos/:id", async(req , res ) => {
     }
 })
 
-router.post("/todos", async(req, res) =>{
+router.post("/", async(req, res) =>{
     const {title, description, due_time, status} = req.body;
     if (typeof title !== "string" || typeof description !== "string" || typeof due_time !== "string"  ||typeof status !== "string" || !title || !description || !due_time || !status) {
         throw new TypeError( );
@@ -35,7 +35,7 @@ router.post("/todos", async(req, res) =>{
     res.send(todos);
 })
 
-router.put("/todos/:id", async(req, res) =>{
+router.put("/:id", async(req, res) =>{
     const {title, description, due_time, status} = req.body;
     const todoId = req.params.id;
 
@@ -56,7 +56,7 @@ router.put("/todos/:id", async(req, res) =>{
     }
 })
 
-router.delete("/todos/:id", async(req, res) =>{
+router.delete("/:id", async(req, res) =>{
     const todoDelete = await deleteTodo(req.params.id)
     if (todoDelete) {
         res.send({msg: `Successfully deleted record number : ${req.params.id}`});
