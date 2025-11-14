@@ -83,7 +83,7 @@ export function AnimateTabsDemo() {
         instance.post("/login", loginData)
         .then((res) => {
             console.log(res);
-            window.location.href = "/todo/todo";
+            window.location.href = "/todo";
         })
         .catch((err) => {
             console.log(err);
@@ -97,7 +97,7 @@ export function AnimateTabsDemo() {
         instance.post("/register", registerData)
             .then((res) => {
                 console.log(res);
-                window.location.href = "/todo/todo";
+                window.location.href = "/todo";
             })
             .catch((err) => {
                 console.log(err);
