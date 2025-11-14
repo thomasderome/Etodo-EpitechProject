@@ -59,7 +59,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {useEffect} from "react";
-
+import {Loader} from "@/components/animate-ui/icons/loader"
+import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
 const data_source = {
     "user": {
         "name": "cxw",
@@ -79,12 +80,15 @@ export default function Todo_page() {
     useEffect(() => {
         instance.get("/todos").then(response => {
             set_todo_data(response.data);
-        });
+        }).catch((e) => {
+            if (e.status === 403) {
+                localStorage.removeItem("token");
+                window.location.href = "/login/login";
+            } else {
+                alert("Failed to load todo");
+            }
+        })
     }, []);
-
-
-    const [user_data, set_user_data] = React.useState();
-    const [settings_data, set_setting_data] = React.useState();
 
     // VARIABLE SYSTEM
     const isMobile = useIsMobile();
@@ -122,7 +126,6 @@ export default function Todo_page() {
 
     // SYSTEM FOR EXIT AND VALID RENAME TODO
     async function apply_rename(e) {
-        {/* ADD THE REQUEST IN FUTURE FOR API */}
         if (e.key === "Enter" || !e.key) {
             e.preventDefault();
             e.currentTarget.contentEditable = false;
@@ -300,7 +303,7 @@ export default function Todo_page() {
                         </SidebarGroupLabel>
                         {todo_data.map((todo_element) => (
                                 <SidebarMenuItem key={todo_element.id} className="flex group">
-                                    <SidebarMenuButton >
+                                    <SidebarMenuButton>
                                         <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-200"
                                               contentEditable={todo_element?.edit ? todo_element.edit : false}
                                               ref={todo_element?.edit ? focus_item : null}
@@ -308,6 +311,11 @@ export default function Todo_page() {
                                               onKeyDown={apply_rename}
                                               data-id={todo_element.id}
                                               suppressContentEditableWarning={true}>{todo_element.title}</span>
+                                        { todo_element.status === 'in progress' ? (
+                                            <Loader animateOnHover={true}/>
+                                            ) : todo_element.status === 'done' ? (
+                                                <CircleCheck animateOnHover={true} />
+                                            ): null }
                                     </SidebarMenuButton>
                                     <DropdownMenu >
                                         <DropdownMenuTrigger className="outline-none"><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
