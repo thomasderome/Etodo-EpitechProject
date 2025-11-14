@@ -46,7 +46,7 @@ import {
     DialogPanel,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
+    DialogFooter, DialogClose,
 } from "@/components/animate-ui/components/headless/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,15 @@ interface TodoItem {
     edit: boolean;
 }
 
+interface User_type {
+    id: string;
+    email: string;
+    name: string;
+    password: string;
+    created_at: string;
+    firstname: string;
+    avatar: string;
+}
 
 export default function Todo_page() {
     const isMobile = useIsMobile();
@@ -83,8 +92,10 @@ export default function Todo_page() {
     const [data, setData] = React.useState(data_source);
 
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
+    const [user_data, set_user_data] = React.useState<User_type>();
 
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
+    const [setting_state, setting_set] = React.useState(false);
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
@@ -97,16 +108,15 @@ export default function Todo_page() {
             } else {
                 alert("Failed to load todo");
             }
-        })
-    }, []);
+        });
 
-    const [setting_open, setting_set] = React.useState(false);
-    const [data_setting, set_data_setting] = React.useState({
-        "name": "test",
-        "last_name": "test",
-        "email": "dsq",
-        "password": ""
-    })
+        instance.get("/user").then(response => {
+            set_user_data(response.data);
+        }).catch((e) => {
+                alert("Failed to load user data")
+        });
+
+    }, []);
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
     const focus_item: RefObject<HTMLSpanElement> = React.useRef(null);
@@ -228,7 +238,7 @@ export default function Todo_page() {
 
     return (
         <>
-            <Dialog open={setting_open} onClose={() => setting_set(false)} className="relative z-[50]">
+            <Dialog open={setting_state} onClose={() => setting_set(false)} className="relative z-[50]">
                 <DialogPanel>
                     <form>
                         <DialogHeader>
@@ -237,21 +247,21 @@ export default function Todo_page() {
                         <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Name:</Label>
-                                <Input type="text" value={data_setting.name} onChange={(e) => set_data_setting({...data_setting, "name": e.currentTarget.value})} required/>
+                                <Input type="text" value={user_data?.name ? user_data.name : ""} onChange={(e) => set_user_data({...user_data, "name": e.currentTarget.value})} required/>
                             </div>
                             <div className="text-sm p-2">
-                                <Label className="font-semibold p-1">Last-name:</Label>
-                                <Input type="text" value={data_setting.last_name} onChange={(e) => set_data_setting({...data_setting, "last_name": e.currentTarget.value})} required></Input>
+                                <Label className="font-semibold p-1">Firstname:</Label>
+                                <Input type="text" value={user_data?.firstname ? user_data.firstname : ""} onChange={(e) => set_user_data({...user_data, "firstname": e.currentTarget.value})} required></Input>
                             </div>
                         </div>
                         <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Email:</Label>
-                                <Input type="email" value={data_setting.email} onChange={(e) => set_data_setting({...data_setting, "email": e.currentTarget.value})} required/>
+                                <Input type="email" value={user_data?.email ? user_data.email : ""} onChange={(e) => set_user_data({...user_data, "email": e.currentTarget.value})} required/>
                             </div>
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Password:</Label>
-                                <Input type="password" value={data_setting.password} onChange={(e) => set_data_setting({...data_setting, "password": e.currentTarget.value})} required/>
+                                <Input type="password" value={user_data?.password ? user_data.password : ""} onChange={(e) => set_user_data({...user_data, "password": e.currentTarget.value})} required/>
                             </div>
                         </div>
                         <DialogFooter>
@@ -276,7 +286,7 @@ export default function Todo_page() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                                                <User_label name={data.user.name} image={data.user.avatar} email={data.user.email} />
+                                                <User_label name={user_data?.firstname ? user_data.firstname : ""} image={user_data?.avatar ? user_data.avatar : ""} email={user_data?.email ? user_data.email : ""} />
                                             </SidebarMenuButton>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mt-2"
