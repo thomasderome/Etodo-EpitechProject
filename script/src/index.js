@@ -19,7 +19,7 @@ app.use(verif_token);
 
 // HERE ALL NEW ROUTE FOR TODO ACCESS WITH SECURE SYSTEM
 const todos_routes = require("./routes/todos/todos");
-app.use("/", todos_routes);
+app.use("/", todos_routes, verif_token);
 
 // LOAD ERROR HANDLER
 const errorHandler = require("./middleware/errorHandler.js");
