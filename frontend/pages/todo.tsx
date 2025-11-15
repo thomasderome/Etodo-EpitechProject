@@ -86,16 +86,19 @@ interface User_type {
     avatar: string;
 }
 
+interface Setting_type {
+    name: string;
+    email: string;
+    password: string;
+    firstname: string;
+}
+
 export default function Todo_page() {
     const isMobile = useIsMobile();
 
-    const [data, setData] = React.useState(data_source);
-
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
     const [user_data, set_user_data] = React.useState<User_type>();
-
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
-    const [setting_state, setting_set] = React.useState(false);
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
@@ -223,22 +226,41 @@ export default function Todo_page() {
             })
     }
 
+    const [setting_data, set_setting_data] = React.useState<Setting_type>();
+    const [setting_state, set_setting_state] = React.useState(false);
     function logout() {
         localStorage.removeItem("token");
         window.location.href = "/login";
     }
 
     function setting() {
+        set_setting_data({"name": user_data?.name,
+                            "email": user_data?.email,
+                            "firstname": user_data?.firstname,
+                            "password": ""});
         set_sidebar_state(false);
 
         setTimeout(() => {
-            setting_set(true);
+            set_setting_state(true);
         }, 150);
+    }
+
+    function setting_apply(e) {
+        e.preventDefault();
+        set_setting_state(false);
+
+        instance.put("/user", setting_data)
+            .then(res => {
+                set_user_data(res.data);
+            })
+            .catch(err => {
+                alert("Failed for update user information");
+            })
     }
 
     return (
         <>
-            <Dialog open={setting_state} onClose={() => setting_set(false)} className="relative z-[50]">
+            <Dialog open={setting_state} onClose={() => set_setting_state(false)} className="relative z-[50]">
                 <DialogPanel>
                     <form>
                         <DialogHeader>
@@ -247,26 +269,26 @@ export default function Todo_page() {
                         <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Name:</Label>
-                                <Input type="text" value={user_data?.name ? user_data.name : ""} onChange={(e) => set_user_data({...user_data, "name": e.currentTarget.value})} required/>
+                                <Input type="text" value={setting_data?.name ? setting_data.name : ""} onChange={(e) => set_setting_data({...setting_data, "name": e.currentTarget.value})} required/>
                             </div>
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Firstname:</Label>
-                                <Input type="text" value={user_data?.firstname ? user_data.firstname : ""} onChange={(e) => set_user_data({...user_data, "firstname": e.currentTarget.value})} required></Input>
+                                <Input type="text" value={setting_data?.firstname ? setting_data.firstname : ""} onChange={(e) => set_setting_data({...setting_data, "firstname": e.currentTarget.value})} required></Input>
                             </div>
                         </div>
                         <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Email:</Label>
-                                <Input type="email" value={user_data?.email ? user_data.email : ""} onChange={(e) => set_user_data({...user_data, "email": e.currentTarget.value})} required/>
+                                <Input type="email" value={setting_data?.email ? setting_data.email : ""} onChange={(e) => set_setting_data({...setting_data, "email": e.currentTarget.value})} required/>
                             </div>
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Password:</Label>
-                                <Input type="password" value={user_data?.password ? user_data.password : ""} onChange={(e) => set_user_data({...user_data, "password": e.currentTarget.value})} required/>
+                                <Input type="password" onChange={(e) => set_setting_data({...setting_data, "password": e.currentTarget.value})} required/>
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button onClick={() => setting_set(false)} type="button" variant="outline">Cancel</Button>
-                            <Button onClick={apply_rename} type="submit">Save changes</Button>
+                            <Button onClick={() => set_setting_state(false)} type="button" variant="outline">Cancel</Button>
+                            <Button onClick={setting_apply} type="submit">Save changes</Button>
                         </DialogFooter>
                     </form>
                 </DialogPanel>
