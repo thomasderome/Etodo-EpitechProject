@@ -2,5 +2,5 @@
 DS_Store
 .env
 node_modules
-script/src/package.json
-script/src/package-lock.json
+backend/script/src/package.json
+backend/script/src/package-lock.json

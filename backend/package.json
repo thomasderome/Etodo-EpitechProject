@@ -5,14 +5,15 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "../script/src/index.js",
+  "main": "script/src/index.js",
   "scripts": {
-    "dev": "nodemon ../script/src/index.js",
-    "start": "node ../script/src/index.js"
+    "dev": "nodemon script/src/index.js",
+    "start": "node script/src/index.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
