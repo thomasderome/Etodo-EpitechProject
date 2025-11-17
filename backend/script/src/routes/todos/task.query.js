@@ -14,4 +14,28 @@ async function create_task(data) {
     return result[0];
 }
 
-module.exports = { get_all_task, create_task };
+async function change_state_task(task_id, user_id) {
+    const [verif] = await pool.query("SELECT todo_id FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=? AND todo.user_id=?", [task_id, user_id]);
+    if (!verif[0]) {return null}
+
+    await pool.query("UPDATE task SET status=IF(status='todo', 'done', 'todo') WHERE id = ?", [task_id]);
+    const [result] = await pool.query("SELECT * FROM task WHERE id = ?", [task_id]);
+    return result[0];
+}
+
+async function ratio_todo_verif(todo_id) {
+    const [result] = await pool.query("SELECT task.status FROM task JOIN todo ON todo.id=task.todo_id WHERE todo.id=?", [todo_id]);
+
+    let status = "todo";
+    let finish = true;
+    result.map(task => {
+        if (task.status === "done") {
+            status = "in progress";
+        } else if (task.status === "todo") {
+            finish = false;
+        }
+    })
+
+    await pool.query("UPDATE todo SET status=? WHERE id = ?", [finish ? "done" : status, todo_id]);
+}
+module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif };
