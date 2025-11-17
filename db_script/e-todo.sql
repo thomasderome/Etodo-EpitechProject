@@ -17,3 +17,12 @@ CREATE TABLE todo (
     user_id VARCHAR(36) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
+
+CREATE TABLE task (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title varchar(255) NOT NULL,
+    description TEXT NOT NULL,
+    status ENUM('todo', 'done') NOT NULL DEFAULT 'todo',
+    todo_id INT NOT NULL,
+    FOREIGN KEY (todo_id) REFERENCES todo(id) ON DELETE CASCADE
+)
