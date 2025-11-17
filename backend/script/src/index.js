@@ -24,7 +24,7 @@ app.use("/user", verif_token, user_routes);
 
 // HERE ALL ROUTE FOR TASK
 const task_routes = require("./routes/todos/task");
-app.use("/task", verif_token, task_routes);
+app.use("/tasks", verif_token, task_routes);
 
 // LOAD ERROR HANDLER
 const errorHandler = require("./middleware/errorHandler.js");
