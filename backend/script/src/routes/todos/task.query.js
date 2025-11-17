@@ -1,7 +1,7 @@
 const { pool} = require('../../config/db');
 
 async function get_all_task(todo_id, user_id) {
-    const [result] = await pool.query("SELECT * FROM task JOIN todo ON todo.id=task.todo_id WHERE task.todo_id = ? AND todo.user_id = ?", [todo_id, user_id]);
+    const [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id WHERE task.todo_id = ? AND todo.user_id = ?", [todo_id, user_id]);
     return result;
 }
 
@@ -15,11 +15,22 @@ async function create_task(data) {
 }
 
 async function change_state_task(task_id, user_id) {
-    const [verif] = await pool.query("SELECT todo_id FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=? AND todo.user_id=?", [task_id, user_id]);
+    const [verif] = await pool.query("SELECT * FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=? AND todo.user_id=?", [task_id, user_id]);
     if (!verif[0]) {return null}
 
     await pool.query("UPDATE task SET status=IF(status='todo', 'done', 'todo') WHERE id = ?", [task_id]);
     const [result] = await pool.query("SELECT * FROM task WHERE id = ?", [task_id]);
+    return result[0];
+}
+
+async function update_task(data) {
+    const [verif] = await pool.query("SELECT * FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id = ? AND todo.user_id = ?", [data.task_id, data.user_id]);
+
+    if (!verif[0]) {return null}
+
+    await pool.query("UPDATE task SET title=? WHERE id=?", [data.title, data.task_id]);
+    const [result] = await pool.query("SELECT * FROM task WHERE id = ?", [data.task_id]);
+
     return result[0];
 }
 
@@ -38,4 +49,4 @@ async function ratio_todo_verif(todo_id) {
 
     await pool.query("UPDATE todo SET status=? WHERE id = ?", [finish ? "done" : status, todo_id]);
 }
-module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif };
+module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task };
