@@ -57,7 +57,7 @@ router.put("/:id", async(req, res) =>{
 })
 
 router.delete("/:id", async(req, res) =>{
-    const todoDelete = await deleteTodo(req.params.id)
+    const todoDelete = await deleteTodo(req.params.id, req.user_id)
     if (todoDelete) {
         res.send({msg: `Successfully deleted record number : ${req.params.id}`});
     } else {
