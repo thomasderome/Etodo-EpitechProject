@@ -46,27 +46,19 @@ import {
     DialogPanel,
     DialogHeader,
     DialogTitle,
-    DialogFooter, DialogClose,
+    DialogFooter,
 } from "@/components/animate-ui/components/headless/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {useEffect} from "react";
 import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
-const data_source = {
-    "user": {
-        "name": "cxw",
-        "email": "thomas.derome@epitech.eu",
-        "avatar": "https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/1/b/8/1b85b9cd9cb10e440991a5f640b7312f7507370e.png",
-    },
-    "todo": [
-        {"category": false, "title": "test_single", "id": "12c412", "edit": false}
-    ]
-}
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/animate-ui/components/headless/checkbox';
+
 
 interface TodoItem {
-    "id": number;
+    id: number;
     title: string;
     description: string;
     createdAt: string;
@@ -93,12 +85,24 @@ interface Setting_type {
     firstname: string;
 }
 
+const data = {
+    header: {
+        id_todo: 10,
+        title: "Test",
+    },
+    task_list: [
+        {id: 45, title:"test", description:"Test 1", status:"todo"},
+        {id: 44, title:"tesszgt", description:"Test 2", status:"done"}
+    ]
+}
+
 export default function Todo_page() {
     const isMobile = useIsMobile();
 
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
     const [user_data, set_user_data] = React.useState<User_type>();
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
+    const [task_data, set_task_data] = React.useState(data);
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
@@ -217,7 +221,6 @@ export default function Todo_page() {
 
         await instance.delete(`/todos/${id_element}`)
             .then(res => {
-                console.log(todo_data)
                 const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
                 set_todo_data([...filter]);
             })
@@ -225,6 +228,25 @@ export default function Todo_page() {
                 alert("Failed for remove todo");
             })
     }
+
+    // SYSTEM FOR DISPLAY TASK IN TODO
+
+    async function display_task(e: MouseEvent<HTMLDivElement, MouseEvent>){
+        const title = e.currentTarget.dataset.title
+        const id = e.currentTarget.dataset.id
+
+//         instance.get(`/tasks/${id}`)
+//             .then(res => {
+//                 set_task_data({
+//                     header: {
+//                         id: id,
+//                         title: title
+//                     },
+//                     task_list: res.data
+//                 })
+//             })
+    }
+
 
     const [setting_data, set_setting_data] = React.useState<Setting_type>();
     const [setting_state, set_setting_state] = React.useState(false);
@@ -346,7 +368,7 @@ export default function Todo_page() {
                         </SidebarGroupLabel>
                         {todo_data.map((todo_element) => (
                                 <SidebarMenuItem key={todo_element.id} className="flex group">
-                                    <SidebarMenuButton>
+                                    <SidebarMenuButton data-title={todo_element.title} data-id={todo_element.id} onClick={display_task}>
                                         <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-54"
                                               contentEditable={todo_element?.edit ? todo_element.edit : false}
                                               ref={todo_element?.edit ? focus_item : null}
@@ -390,10 +412,23 @@ export default function Todo_page() {
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Breadcrumb>
-                                <BreadcrumbItem>Name of todo</BreadcrumbItem>
+                                <BreadcrumbItem>test</BreadcrumbItem>
                             </Breadcrumb>
                         </div>
                     </header>
+
+                    {/* DIV todo list */}
+                    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                        {task_data.task_list.map((task_element) => (
+                            <div key={task_element.id} className="flex rounded-xl bg-muted/50" >
+                                <div className="flex items-center gap-x-3">
+                                    <Checkbox size="default" checked={task_element.status === "done"}/>
+                                    <Input type="text" maxLength={255} value={task_element.title} required/>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                 </SidebarInset>
             </SidebarProvider>
         </>
