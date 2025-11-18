@@ -260,7 +260,6 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT ADD NEW INPUT
-
     async function appendTask(e: MouseEvent<HTMLDivElement, MouseEvent> | React.KeyboardEventHandler<HTMLDivElement>){
         if ("key" in e){
             if (e.key !== "Enter") return;
@@ -282,10 +281,26 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT CHANGE VALUE
+    function changeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
+        const newData = task_data?.task_list.map((task) => {
+            if (e.currentTarget.dataset.id === String(task.id)) {
+                return {...task, title: e.currentTarget.value};
+            } else {
+                return task;
+            }
+        })
+        if (task_data && newData) {
+            set_task_data({
+                header: {...task_data.header},
+                task_list: newData
+            })
+        }
 
-    async function changeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
-        console.log(e.target.value);
-    };
+    }
+
+    async function sendChangeValue(e: MouseEvent<HTMLDivElement, MouseEvent>){
+        await instance.put
+    }
 
 
     const [setting_data, set_setting_data] = React.useState<Setting_type>();
@@ -463,7 +478,7 @@ export default function Todo_page() {
                             <div key={task_element.id} className="flex " onKeyDown={appendTask} >
                                 <div className="flex items-center gap-x-3">
                                     <Checkbox size="default" checked={task_element.status === "done"} />
-                                    <Input type="text" maxLength={255} value={task_element.title} onChange={changeTaskTitle} />
+                                    <Input type="text" maxLength={255} data-id={task_element.id} value={task_element.title} onChange={changeTaskTitle}  onBlur={sendChangeValue}/>
                                 </div>
                             </div>
                         )) : (<div>Choose todo</div>)}
