@@ -323,6 +323,26 @@ export default function Todo_page() {
             currentTarget.dataset.update = "false";        }
     }
 
+    async function changeTaskState(e: React.ChangeEvent<HTMLInputElement>) {
+        const currentTarget = e.currentTarget;
+        if (task_data) {
+            await instance.patch(`/tasks/check/${e.currentTarget.dataset.id}`)
+                .then(res => {
+                    const newData = task_data?.task_list.map((task) => {
+                        if (currentTarget.dataset.id === String(task.id)) {
+                            return res.data;
+                        } else {
+                            return task;
+                        }
+                })
+                set_task_data({
+                    header: {...task_data.header},
+                    task_list: newData
+                })
+            })
+        }
+    }
+
 
     const [setting_data, set_setting_data] = React.useState<Setting_type>();
     const [setting_state, set_setting_state] = React.useState(false);
@@ -498,8 +518,9 @@ export default function Todo_page() {
                         {task_data ? task_data.task_list.map((task_element) => (
                             <div key={task_element.id} className="flex " onKeyDown={appendTask} >
                                 <div className="flex items-center gap-x-3">
-                                    <Checkbox size="default" checked={task_element.status === "done"} />
+                                    <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"} onClick={changeTaskState} />
                                     <Input type="text" maxLength={255} data-id={task_element.id} value={task_element.title} onChange={changeTaskTitle}  onBlur={sendChangeValue}/>
+                                    <Trash2 className="text-red-600" animateOnHover/>
                                 </div>
                             </div>
                         )) : (<div>Choose todo</div>)}
