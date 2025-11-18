@@ -85,6 +85,19 @@ interface Setting_type {
     firstname: string;
 }
 
+interface task_interface {
+    header: {
+        id_todo: number;
+        title: string;
+    },
+    task_list: {
+        id: number;
+        title: string;
+        description: string;
+        status: "todo" | "done";
+    }[]
+}
+
 const data = {
     header: {
         id_todo: 10,
@@ -102,7 +115,7 @@ export default function Todo_page() {
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
     const [user_data, set_user_data] = React.useState<User_type>();
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
-    const [task_data, set_task_data] = React.useState(data);
+    const [task_data, set_task_data] = React.useState<task_interface | null>(null);
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
@@ -122,7 +135,6 @@ export default function Todo_page() {
         }).catch((e) => {
                 alert("Failed to load user data")
         });
-
     }, []);
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
@@ -235,17 +247,45 @@ export default function Todo_page() {
         const title = e.currentTarget.dataset.title
         const id = e.currentTarget.dataset.id
 
-//         instance.get(`/tasks/${id}`)
-//             .then(res => {
-//                 set_task_data({
-//                     header: {
-//                         id: id,
-//                         title: title
-//                     },
-//                     task_list: res.data
-//                 })
-//             })
+         instance.get(`/tasks/${id}`)
+             .then(res => {
+                 set_task_data({
+                     header: {
+                         id_todo: id,
+                         title: title
+                     },
+                     task_list: res.data
+                })
+            })
     }
+
+    // FUNCTION THAT ADD NEW INPUT
+
+    async function appendTask(e: MouseEvent<HTMLDivElement, MouseEvent> | React.KeyboardEventHandler<HTMLDivElement>){
+        if ("key" in e){
+            if (e.key !== "Enter") return;
+        }
+        if (task_data) {
+            await instance.post("/tasks", {
+                title: "New task",
+                description: "New description",
+                todo_id: task_data.header.id_todo
+            })
+                .then(res => {
+                    set_task_data({
+                        header: {...task_data.header},
+                        task_list: [...task_data.task_list, res.data]
+                    })
+                })
+        }
+
+    }
+
+    // FUNCTION THAT CHANGE VALUE
+
+    async function changeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
+        console.log(e.target.value);
+    };
 
 
     const [setting_data, set_setting_data] = React.useState<Setting_type>();
@@ -412,21 +452,23 @@ export default function Todo_page() {
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Breadcrumb>
-                                <BreadcrumbItem>test</BreadcrumbItem>
+                                <BreadcrumbItem>{task_data ? task_data.header.title : "Choose Todo"}</BreadcrumbItem>
                             </Breadcrumb>
                         </div>
                     </header>
 
                     {/* DIV todo list */}
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                        {task_data.task_list.map((task_element) => (
-                            <div key={task_element.id} className="flex rounded-xl bg-muted/50" >
+                        {task_data ? task_data.task_list.map((task_element) => (
+                            <div key={task_element.id} className="flex " onKeyDown={appendTask} >
                                 <div className="flex items-center gap-x-3">
-                                    <Checkbox size="default" checked={task_element.status === "done"}/>
-                                    <Input type="text" maxLength={255} value={task_element.title} required/>
+                                    <Checkbox size="default" checked={task_element.status === "done"} />
+                                    <Input type="text" maxLength={255} value={task_element.title} onChange={changeTaskTitle} />
                                 </div>
                             </div>
-                        ))}
+                        )) : (<div>Choose todo</div>)}
+                        <div className="h-full " onClick={appendTask}>
+                        </div>
                     </div>
 
                 </SidebarInset>
