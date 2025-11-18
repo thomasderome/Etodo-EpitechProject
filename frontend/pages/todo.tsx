@@ -227,7 +227,7 @@ export default function Todo_page() {
             })
     }
 
-    async function remove_todo(e: MouseEvent<HTMLDivElement, MouseEvent>) {
+    async function remove_todo(e: React.MouseEvent<HTMLDivElement>) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         const id_element = e.currentTarget.dataset.id;
 
@@ -235,6 +235,7 @@ export default function Todo_page() {
             .then(res => {
                 const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
                 set_todo_data([...filter]);
+                set_task_data(null);
             })
             .catch(err => {
                 alert("Failed for remove todo");
@@ -243,24 +244,26 @@ export default function Todo_page() {
 
     // SYSTEM FOR DISPLAY TASK IN TODO
 
-    async function display_task(e: MouseEvent<HTMLDivElement, MouseEvent>){
+    async function display_task(e: React.MouseEvent<HTMLDivElement>){
         const title = e.currentTarget.dataset.title
-        const id = e.currentTarget.dataset.id
+        const id = Number(e.currentTarget.dataset.id)
 
-         instance.get(`/tasks/${id}`)
-             .then(res => {
-                 set_task_data({
-                     header: {
-                         id_todo: id,
-                         title: title
-                     },
-                     task_list: res.data
+        if (title && id) {
+            instance.get(`/tasks/${id}`)
+                .then(res => {
+                    set_task_data({
+                        header: {
+                            id_todo: id,
+                            title: title
+                        },
+                        task_list: res.data
+                    })
                 })
-            })
+        }
     }
 
     // FUNCTION THAT ADD NEW INPUT
-    async function appendTask(e: MouseEvent<HTMLDivElement, MouseEvent> | React.KeyboardEventHandler<HTMLDivElement>){
+    async function appendTask(e: React.MouseEvent<HTMLDivElement> | React.KeyboardEventHandler<HTMLDivElement>){
         if ("key" in e){
             if (e.key !== "Enter") return;
         }
@@ -281,7 +284,8 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT CHANGE VALUE
-    function changeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
+    function changeTaskTitle(e: React.KeyboardEvent<HTMLInputElement>) {
+        e.currentTarget.dataset.update = "true";
         const newData = task_data?.task_list.map((task) => {
             if (e.currentTarget.dataset.id === String(task.id)) {
                 return {...task, title: e.currentTarget.value};
@@ -298,8 +302,25 @@ export default function Todo_page() {
 
     }
 
-    async function sendChangeValue(e: MouseEvent<HTMLDivElement, MouseEvent>){
-        await instance.put
+    async function sendChangeValue(e: React.MouseEvent<HTMLInputElement>){
+        const currentTarget = e.currentTarget;
+        if (task_data && e.currentTarget.dataset?.update === "true") {
+            await instance.put(`/tasks/${e.currentTarget.dataset.id}`, {
+                title: e.currentTarget.value ? e.currentTarget.value : "New task"
+            }).then(res => {
+                const newData = task_data?.task_list.map((task) => {
+                    if (currentTarget.dataset.id === String(task.id)) {
+                        return res.data;
+                    } else {
+                        return task;
+                    }
+                })
+                set_task_data({
+                    header: {...task_data.header},
+                    task_list: newData
+                })
+            })
+            currentTarget.dataset.update = "false";        }
     }
 
 
