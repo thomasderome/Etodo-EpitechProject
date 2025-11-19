@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import {
     Tabs,
     TabsContent,
@@ -17,7 +19,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusIcon } from 'lucide-react';
+
 import {
     RippleButton,
     RippleButtonRipples,
@@ -27,7 +29,8 @@ import { StarsBackground } from '@/components/animate-ui/components/backgrounds/
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import instance from "@/lib/axios";
-import {FormEvent, useState} from "react";
+import { useState} from "react";
+import { useRouter } from "next/navigation";
 
 interface RippleButtonDemoProps {
     variant: "login" | "register";
@@ -52,6 +55,7 @@ export default function LoginPage (){
 /*--- BOX Login / Register ---*/
 export function AnimateTabsDemo() {
     /* Etats pour login*/
+    const router = useRouter();
     const [loginData, setLoginData] = useState({
         email: '',
         password: '',
@@ -81,9 +85,8 @@ export function AnimateTabsDemo() {
         console.log("Login data:", loginData);
 
         instance.post("/login", loginData)
-        .then((res) => {
-            console.log(res);
-            window.location.href = "/todo";
+        .then(() => {
+            router.push("/todo");
         })
         .catch((err) => {
             console.log(err);
@@ -95,9 +98,8 @@ export function AnimateTabsDemo() {
         console.log("Register data:", registerData)
 
         instance.post("/register", registerData)
-            .then((res) => {
-                console.log(res);
-                window.location.href = "/todo";
+            .then(() => {
+                router.push("/todo");
             })
             .catch((err) => {
                 console.log(err);
@@ -169,7 +171,7 @@ export function AnimateTabsDemo() {
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                <SubmitButton variant={"register"} size={"default"}  type="submit" form="formRegister" />
+                                <SubmitButton variant={"register"} size={"default"}  type={"submit"} form={"formRegister"} />
                             </CardFooter>
                         </TabsContent>
                     </TabsContents>

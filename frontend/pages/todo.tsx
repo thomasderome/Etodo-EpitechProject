@@ -54,16 +54,7 @@ import { Label } from "@/components/ui/label";
 import {useEffect} from "react";
 import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
-const data_source = {
-    "user": {
-        "name": "cxw",
-        "email": "thomas.derome@epitech.eu",
-        "avatar": "https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/1/b/8/1b85b9cd9cb10e440991a5f640b7312f7507370e.png",
-    },
-    "todo": [
-        {"category": false, "title": "test_single", "id": "12c412", "edit": false}
-    ]
-}
+import { useRouter } from "next/navigation";
 
 interface TodoItem {
     "id": number;
@@ -94,6 +85,8 @@ interface Setting_type {
 }
 
 export default function Todo_page() {
+    const router = useRouter();
+
     const isMobile = useIsMobile();
 
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
@@ -107,7 +100,7 @@ export default function Todo_page() {
         }).catch((e) => {
             if (e.status === 403) {
                 localStorage.removeItem("token");
-                window.location.href = "/login";
+                router.push("/login");
             } else {
                 alert("Failed to load todo");
             }
@@ -233,7 +226,7 @@ export default function Todo_page() {
     const [setting_state, set_setting_state] = React.useState(false);
     function logout() {
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        router.push("/login");
     }
 
     function setting() {
@@ -279,7 +272,7 @@ export default function Todo_page() {
                                 <Input type="text" value={setting_data?.firstname ? setting_data.firstname : ""} onChange={(e) => set_setting_data(setting_data ? {...setting_data, "firstname": e.currentTarget.value} : null)} required></Input>
                             </div>
                         </div>
-                        <div className="m-2 flex">e.preventDefault();
+                        <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Email:</Label>
                                 <Input type="email" value={setting_data?.email ? setting_data.email : ""} onChange={(e) => set_setting_data(setting_data ? {...setting_data, "email": e.currentTarget.value} : null)} required/>
