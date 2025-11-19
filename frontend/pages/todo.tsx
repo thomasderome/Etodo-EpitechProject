@@ -343,6 +343,26 @@ export default function Todo_page() {
         }
     }
 
+    //FUNCTION FOR DELETE TASK
+    async function deleteTask(e: React.MouseEvent<HTMLDivElement>) {
+        const taskId = e.currentTarget.dataset.id;
+
+
+        if (task_data) {
+            await instance.delete(`/tasks/${taskId}`)
+            .then(res => {
+                const filter = task_data.task_list.filter((item) => String(item.id) !== taskId);
+                set_task_data({
+                    header: {...task_data.header},
+                    task_list: filter
+                })
+            })
+                .catch(err => {
+                    alert("Error deleting task");
+                })
+        }
+    }
+
 
     const [setting_data, set_setting_data] = React.useState<Setting_type>();
     const [setting_state, set_setting_state] = React.useState(false);
@@ -520,7 +540,7 @@ export default function Todo_page() {
                                 <div className="flex items-center gap-x-3">
                                     <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"} onClick={changeTaskState} />
                                     <Input type="text" maxLength={255} data-id={task_element.id} value={task_element.title} onChange={changeTaskTitle}  onBlur={sendChangeValue}/>
-                                    <Trash2 className="text-red-600" animateOnHover/>
+                                    <Trash2 className="text-red-600" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
                                 </div>
                             </div>
                         )) : (<div>Choose todo</div>)}
