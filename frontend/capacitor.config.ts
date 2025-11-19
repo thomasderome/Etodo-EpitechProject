@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'etodo',
   webDir: 'out',
     server: {
-        androidScheme: 'https'
+        androidScheme: 'http'
     }
 };
 
