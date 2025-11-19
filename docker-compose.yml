@@ -1,18 +1,35 @@
 services:
+  frontend:
+    build: ./frontend
+    container_name: "frontend_etodo"
+
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - ./.env
+
+  api:
+    build: ./backend
+    container_name: "api_etodo"
+
+    ports:
+      - "3001:3001"
+
+    env_file:
+      - ./.env
+
   db_todo:
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
-    container_name: db_todo
-
-    ports:
-      - "3306:3306"
+    container_name: "db_etodo"
 
     env_file:
       - ./.env
 
     volumes:
-      - db_todo:/var/lib/mysql
+      - db_etodo:/var/lib/mysql
       - ./db_script:/docker-entrypoint-initdb.d
 
 volumes:
-  db_todo:
+  db_etodo:

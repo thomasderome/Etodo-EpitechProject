@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "npm run build && serve out",
+    "start": "serve out -l 3000",
     "build": "next build",
     "dev": "next dev",
     "cap:build": "npm run build && npx cap sync",
