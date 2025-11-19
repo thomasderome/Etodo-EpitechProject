@@ -34,8 +34,9 @@ async function update_task(data) {
     return result[0];
 }
 
-async function ratio_todo_verif(todo_id) {
-    const [result] = await pool.query("SELECT task.status FROM task JOIN todo ON todo.id=task.todo_id WHERE todo.id=?", [todo_id]);
+async function ratio_todo_verif(task_id) {
+    const [todo_id] = await pool.query("SELECT todo.id FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=?", [task_id]);
+    const [result] = await pool.query("SELECT task.status FROM task JOIN todo ON todo.id=task.todo_id WHERE todo.id=?", [todo_id[0].id]);
 
     let status = "todo";
     let finish = true;
@@ -47,7 +48,7 @@ async function ratio_todo_verif(todo_id) {
         }
     })
 
-    await pool.query("UPDATE todo SET status=? WHERE id = ?", [finish ? "done" : status, todo_id]);
+    await pool.query("UPDATE todo SET status=? WHERE id = ?", [finish ? "done" : status, todo_id[0].id]);
 }
 
 async function task_delete(task_id, user_id){

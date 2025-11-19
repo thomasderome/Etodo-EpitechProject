@@ -22,6 +22,7 @@ router.post('/', async (req, res) => {
     });
 
     if (response === null) return res.status(403).send();
+    await ratio_todo_verif(response.id)
     res.status(200).send(response);
 })
 
@@ -49,13 +50,15 @@ router.patch('/check/:task_id', async (req, res) => {
     const task = await change_state_task(task_id, req.user_id);
     if (!task) return res.status(403).send();
 
-    await ratio_todo_verif(task.todo_id)
+    await ratio_todo_verif(task_id)
 
     res.send(task);
 })
 
 router.delete('/:task_id', async (req, res) => {
-    const taskDelete = await task_delete(req.params.task_id, req.user_id)
+    const task_id = req.params.task_id;
+    const taskDelete = await task_delete(req.params.task_id, req.user_id);
+
     res.send(taskDelete);
 })
 
