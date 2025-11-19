@@ -49,4 +49,12 @@ async function ratio_todo_verif(todo_id) {
 
     await pool.query("UPDATE todo SET status=? WHERE id = ?", [finish ? "done" : status, todo_id]);
 }
-module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task };
+
+async function task_delete(task_id, user_id){
+    const [verif] = await pool.query("SELECT * FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=? AND todo.user_id=?", [task_id, user_id]);
+    if (!verif[0]) {return null}
+
+    const [result] = await pool.query("DELETE FROM task WHERE id = ?", [task_id]);
+    return result[0];
+}
+module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task, task_delete };

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task } = require('./task.query.js');
+const { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task, task_delete } = require('./task.query.js');
+const {deleteTodo} = require("./todos.query");
 
 router.get('/:id_todo', async (req, res) => {
     const task_list = await get_all_task(req.params.id_todo, req.user_id);
@@ -51,6 +52,11 @@ router.patch('/check/:task_id', async (req, res) => {
     await ratio_todo_verif(task.todo_id)
 
     res.send(task);
+})
+
+router.delete('/:task_id', async (req, res) => {
+    const taskDelete = await task_delete(req.params.task_id, req.user_id)
+    res.send(taskDelete);
 })
 
 module.exports = router;
