@@ -539,7 +539,7 @@ export default function Todo_page() {
                             <div key={task_element.id} className="flex " onKeyDown={appendTask} >
                                 <div className="flex items-center gap-x-3">
                                     <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"} onClick={changeTaskState} />
-                                    <Input type="text" maxLength={255} data-id={task_element.id} value={task_element.title} onChange={changeTaskTitle}  onBlur={sendChangeValue}/>
+                                    <Input type="text" maxLength={255} data-id={task_element.id} value={task_element.title} onChange={changeTaskTitle}  onBlur={sendChangeValue} onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}/>
                                     <Trash2 className="text-red-600" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
                                 </div>
                             </div>
