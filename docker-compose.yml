@@ -9,6 +9,9 @@ services:
     env_file:
       - ./.env
 
+    depends_on:
+      - api
+
   api:
     build: ./backend
     container_name: "api_etodo"
@@ -18,6 +21,9 @@ services:
 
     env_file:
       - ./.env
+
+    depends_on:
+      - db_todo
 
   db_todo:
     image: mysql:8.0
