@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "npm run build && npx serve@latest out",
+    "start": "npm run build && serve out",
     "build": "next build",
     "dev": "next dev",
     "cap:build": "npm run build && npx cap sync",
@@ -32,6 +32,8 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "serv": "^0.2.4",
+    "serve": "^14.2.5",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
