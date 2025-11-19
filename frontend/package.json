@@ -3,12 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "start": "npm run build && serve out",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "next dev",
+    "cap:build": "npm run build && npx cap sync",
+    "build:android": "npm run cap:build && chmod +x android/gradlew && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/ios": "^7.4.4",
     "@floating-ui/react": "^0.27.16",
     "@headlessui/react": "^2.2.9",
     "@radix-ui/react-avatar": "^1.1.11",
@@ -27,6 +32,8 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "serv": "^0.2.4",
+    "serve": "^14.2.5",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {

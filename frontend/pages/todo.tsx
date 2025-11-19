@@ -54,16 +54,7 @@ import { Label } from "@/components/ui/label";
 import {useEffect} from "react";
 import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
-const data_source = {
-    "user": {
-        "name": "cxw",
-        "email": "thomas.derome@epitech.eu",
-        "avatar": "https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/1/b/8/1b85b9cd9cb10e440991a5f640b7312f7507370e.png",
-    },
-    "todo": [
-        {"category": false, "title": "test_single", "id": "12c412", "edit": false}
-    ]
-}
+import { useRouter } from "next/navigation";
 
 interface TodoItem {
     "id": number;
@@ -94,6 +85,8 @@ interface Setting_type {
 }
 
 export default function Todo_page() {
+    const router = useRouter();
+
     const isMobile = useIsMobile();
 
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
@@ -107,7 +100,7 @@ export default function Todo_page() {
         }).catch((e) => {
             if (e.status === 403) {
                 localStorage.removeItem("token");
-                window.location.href = "/login";
+                router.push("/login");
             } else {
                 alert("Failed to load todo");
             }
@@ -122,7 +115,7 @@ export default function Todo_page() {
     }, []);
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
-    const focus_item: RefObject<HTMLSpanElement> = React.useRef(null);
+    const focus_item = React.useRef<HTMLSpanElement>(null);
     React.useLayoutEffect(() => {
         if (focus_item.current) {
             focus_item.current.focus();
@@ -146,32 +139,35 @@ export default function Todo_page() {
     })
 
     // SYSTEM FOR EXIT AND VALID RENAME TODO
-    async function apply_rename(e: React.MouseEventHandler<HTMLButtonElement> | MouseEventHandler<HTMLButtonElement>) {
-        if (e.key === "Enter" || !e.key) {
-            e.preventDefault();
-            e.currentTarget.contentEditable = false;
-
-            // VERIFIE SI LE TITRE N'EST PAS VIDE AU SINON METTRE CELUI PAR DEFAUT
-            if (!e.currentTarget.textContent) e.currentTarget.textContent = "New todo";
-
-            // SYSTEM POUR SEND LES MODFIS NAME DE LA TODO
-            // RECUPERE L'ID e.target.id et est son nom e.target.textContent
-            const id_todo = e.currentTarget.dataset.id;
-
-            const promise = todo_data.map(async (item) => {
-                if (item.id == id_todo) {
-                    const res = await instance.put(`/todos/${id_todo}`, {
-                        ...item,
-                        "due_time": item.due_time.slice(0, 19).replace('T', ' '),
-                        "title": e.currentTarget.textContent
-                    })
-                    return {...res.data}
-                }
-                else return {...item};
-            })
-            const new_data = await Promise.all(promise);
-            set_todo_data(new_data);
+    async function apply_rename(e: React.FocusEvent<HTMLSpanElement> | React.KeyboardEvent<HTMLSpanElement>) {
+        if ("key" in e) {
+            if (e.key !== "Enter")  {
+                return;
+            }
         }
+
+        e.currentTarget.contentEditable = "false";
+
+        // VERIFIE SI LE TITRE N'EST PAS VIDE AU SINON METTRE CELUI PAR DEFAUT
+        if (!e.currentTarget.textContent) e.currentTarget.textContent = "New todo";
+
+        // SYSTEM POUR SEND LES MODFIS NAME DE LA TODO
+        // RECUPERE L'ID e.target.id et est son nom e.target.textContent
+        const id_todo = e.currentTarget.dataset.id;
+
+        const promise = todo_data.map(async (item) => {
+            if (item.id == Number(id_todo)) {
+                const res = await instance.put(`/todos/${id_todo}`, {
+                    ...item,
+                    "due_time": item.due_time.slice(0, 19).replace('T', ' '),
+                    "title": e.currentTarget.textContent
+                })
+                return {...res.data}
+            }
+            else return {...item};
+        })
+        const new_data = await Promise.all(promise);
+        set_todo_data(new_data);
     }
 
     // SYSTEM FOR ENABLE RENAME
@@ -179,7 +175,7 @@ export default function Todo_page() {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function enable_rename(e: MouseEvent<HTMLDivElement, MouseEvent>) {
+    async function enable_rename(e: React.MouseEvent<HTMLDivElement>) {
         // SYSTEM TRAVEL THROUGH EACH TODO AND ENABLE EDIT MOD ON SPECIFIC
         const id_element = e.currentTarget.dataset.id;
 
@@ -211,7 +207,7 @@ export default function Todo_page() {
             })
     }
 
-    async function remove_todo(e: MouseEvent<HTMLDivElement, MouseEvent>) {
+    async function remove_todo(e: React.MouseEvent<HTMLDivElement>) {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
         const id_element = e.currentTarget.dataset.id;
 
@@ -226,18 +222,18 @@ export default function Todo_page() {
             })
     }
 
-    const [setting_data, set_setting_data] = React.useState<Setting_type>();
+    const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
     const [setting_state, set_setting_state] = React.useState(false);
     function logout() {
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        router.push("/login");
     }
 
     function setting() {
-        set_setting_data({"name": user_data?.name,
-                            "email": user_data?.email,
-                            "firstname": user_data?.firstname,
-                            "password": ""});
+        set_setting_data({name: user_data?.name ?? "name-default",
+                            email: user_data?.email ?? "email-default.com",
+                            firstname: user_data?.firstname ?? "fistname-default",
+                            password: ""});
         set_sidebar_state(false);
 
         setTimeout(() => {
@@ -245,7 +241,7 @@ export default function Todo_page() {
         }, 150);
     }
 
-    function setting_apply(e) {
+    function setting_apply(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         set_setting_state(false);
 
@@ -269,21 +265,21 @@ export default function Todo_page() {
                         <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Name:</Label>
-                                <Input type="text" value={setting_data?.name ? setting_data.name : ""} onChange={(e) => set_setting_data({...setting_data, "name": e.currentTarget.value})} required/>
+                                <Input type="text" value={setting_data?.name ? setting_data.name : ""} onChange={(e) => set_setting_data(setting_data ? {...setting_data, "name": e.currentTarget.value} : null)} required/>
                             </div>
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Firstname:</Label>
-                                <Input type="text" value={setting_data?.firstname ? setting_data.firstname : ""} onChange={(e) => set_setting_data({...setting_data, "firstname": e.currentTarget.value})} required></Input>
+                                <Input type="text" value={setting_data?.firstname ? setting_data.firstname : ""} onChange={(e) => set_setting_data(setting_data ? {...setting_data, "firstname": e.currentTarget.value} : null)} required></Input>
                             </div>
                         </div>
                         <div className="m-2 flex">
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Email:</Label>
-                                <Input type="email" value={setting_data?.email ? setting_data.email : ""} onChange={(e) => set_setting_data({...setting_data, "email": e.currentTarget.value})} required/>
+                                <Input type="email" value={setting_data?.email ? setting_data.email : ""} onChange={(e) => set_setting_data(setting_data ? {...setting_data, "email": e.currentTarget.value} : null)} required/>
                             </div>
                             <div className="text-sm p-2">
                                 <Label className="font-semibold p-1">Password:</Label>
-                                <Input type="password" onChange={(e) => set_setting_data({...setting_data, "password": e.currentTarget.value})} required/>
+                                <Input type="password" onChange={(e) => set_setting_data(setting_data ? {...setting_data, "password": e.currentTarget.value} : null)} required/>
                             </div>
                         </div>
                         <DialogFooter>
@@ -294,7 +290,7 @@ export default function Todo_page() {
                 </DialogPanel>
             </Dialog>
 
-            <SidebarProvider  style={{ "--sidebar-width-icon": "0px"}} onOpenChange={(state) => set_sidebar_state(state)} open={sidebar_state}>
+            <SidebarProvider  style={{ "--sidebar-width-icon": "0px"} as React.CSSProperties} onOpenChange={(state) => set_sidebar_state(state)} open={sidebar_state}>
                 <Sidebar collapsible="icon">
 
                     {/* HEAD SIDEBAR USER */}
