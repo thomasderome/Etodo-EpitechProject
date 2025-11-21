@@ -55,6 +55,12 @@ import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/animate-ui/components/headless/checkbox';
+import {
+    Accordion,
+    AccordionItem,
+    AccordionTrigger,
+    AccordionPanel,
+} from '@/components/animate-ui/components/base/accordion';
 
 
 interface TodoItem {
@@ -243,7 +249,6 @@ export default function Todo_page() {
     }
 
     // SYSTEM FOR DISPLAY TASK IN TODO
-
     async function display_task(e: React.MouseEvent<HTMLDivElement>){
         const title = e.currentTarget.dataset.title
         const id = Number(e.currentTarget.dataset.id)
@@ -535,16 +540,44 @@ export default function Todo_page() {
 
                     {/* DIV todo list */}
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                        {task_data ? task_data.task_list.map((task_element) => (
-                            <div key={task_element.id} className="flex " onKeyDown={appendTask} >
-                                <div className="flex items-center gap-x-3">
-                                    <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"} onClick={changeTaskState} />
-                                    <Input type="text" maxLength={255} data-id={task_element.id} value={task_element.title} onChange={changeTaskTitle}  onBlur={sendChangeValue} onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}/>
-                                    <Trash2 className="text-red-600" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
-                                </div>
-                            </div>
-                        )) : (<div>Choose todo</div>)}
+                        {task_data ? (
+                            <Accordion multiple={false} className="w-full">
+                                {task_data.task_list.map((task_element) => (
+                                    <AccordionItem key={task_element.id} value={`task-${task_element.id}`} className="border-b">
+                                        <div className="flex items-center gap-x-3 w-full">
+                                            <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"}
+                                                onClick={changeTaskState}/>
+                                            <AccordionTrigger showArrow={true} className="flex-1 justify-start">
+                                                <Input
+                                                    type="text"
+                                                    maxLength={255}
+                                                    data-id={task_element.id}
+                                                    value={task_element.title}
+                                                    onChange={changeTaskTitle}
+                                                    onBlur={sendChangeValue}
+                                                    onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                    className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
+                                                />
+                                            </AccordionTrigger>
+                                            <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
+                                        </div>
+                                        {/* DESCRIPTION PANEL */}
+                                        <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
+                                            <Input
+                                                type="text"
+                                                data-id={task_element.id}
+                                                value={task_element.description}
+                                            />
+
+                                        </AccordionPanel>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        ) : (
+                            <div>Choose todo</div>
+                        )}
                         <div className="h-full " onClick={appendTask}>
+
                         </div>
                     </div>
 
