@@ -306,7 +306,7 @@ export default function Todo_page() {
         }
 
     }
-
+    // FUNCTION THAT SEND CHANGED VALUE
     async function sendChangeValue(e: React.MouseEvent<HTMLInputElement>){
         const currentTarget = e.currentTarget;
         if (task_data && e.currentTarget.dataset?.update === "true") {
@@ -326,6 +326,24 @@ export default function Todo_page() {
                 })
             })
             currentTarget.dataset.update = "false";        }
+    }
+
+    // FUNCTION THAT CHANGE DESCRIPTION VALUE FOR TASK
+    async function changeTaskDescription(e: React.KeyboardEvent<HTMLInputElement>) {
+        e.currentTarget.dataset.update = "true";
+        const newData = task_data?.task_list.map((task) => {
+            if (e.currentTarget.dataset.id === String(task.id)) {
+                return {...task, description: e.currentTarget.value};
+            } else {
+                return task;
+            }
+        })
+        if (task_data && newData) {
+            set_task_data({
+                header: {...task_data.header},
+                task_list: newData
+            })
+        }
     }
 
     async function changeTaskState(e: React.ChangeEvent<HTMLInputElement>) {
@@ -567,6 +585,7 @@ export default function Todo_page() {
                                                 type="text"
                                                 data-id={task_element.id}
                                                 value={task_element.description}
+                                                onChange={changeTaskDescription}
                                             />
 
                                         </AccordionPanel>
