@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task, task_delete } = require('./task.query.js');
-const {deleteTodo} = require("./todos.query");
 
 router.get('/:id_todo', async (req, res) => {
     const task_list = await get_all_task(req.params.id_todo, req.user_id);
