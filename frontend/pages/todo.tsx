@@ -301,6 +301,7 @@ export default function Todo_page() {
 
     function create_share(e: React.FormEvent<HTMLFormElement>) {
         if (share_setting) {
+            set_add_share_errer(false);
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
 
@@ -401,7 +402,7 @@ export default function Todo_page() {
                             <TooltipProvider >
                                 <Tooltip open={add_share_errer} >
                                     <TooltipTrigger asChild >
-                                        <Input type={"email"} name={"email"} required/>
+                                        <Input type={"email"} name={"email"} onChange={() => add_share_errer ? null : set_add_share_errer(false)} required/>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="z-[150] bg-red-500 text-white border-red-600 ">
                                         <p>This account not exist</p>
