@@ -104,18 +104,12 @@ interface task_interface {
         title: string;
         description: string;
         status: "todo" | "done";
-    }[]
+    }[],
+    share?: {
+        readonly: boolean;
+    };
 }
 
-const data = {
-    header: {
-        id_todo: 10,
-        title: "Test",
-    },
-    task_list: [
-        {id: 45, title:"test", description:"Test 1", status:"todo"},
-        {id: 44, title:"tesszgt", description:"Test 2", status:"done"}
-    ]
 interface Share_Type {
     id: number;
     todo_list_id: number;
@@ -297,6 +291,8 @@ export default function Todo_page() {
         const id = Number(e.currentTarget.dataset.id)
 
         if (title && id) {
+            const mode = e.currentTarget.dataset?.mode === "0"
+            console.log(mode, e.currentTarget.dataset?.mode)
             instance.get(`/tasks/${id}`)
                 .then(res => {
                     set_task_data({
@@ -304,7 +300,10 @@ export default function Todo_page() {
                             id_todo: id,
                             title: title
                         },
-                        task_list: res.data
+                        task_list: res.data,
+                        share: {
+                            readonly: mode,
+                        }
                     })
                 })
         }
@@ -442,9 +441,6 @@ export default function Todo_page() {
     }
 
 
-    const [setting_data, set_setting_data] = React.useState<Setting_type>();
-    const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
-    const [setting_state, set_setting_state] = React.useState(false);
     function logout() {
         localStorage.removeItem("token");
         router.push("/login");
@@ -540,6 +536,7 @@ export default function Todo_page() {
         }
 
     }
+    const isReadOnly = task_data?.share?.readonly ?? false;
 
     return (
         <>
@@ -728,7 +725,7 @@ export default function Todo_page() {
 
                             {share_data.map((share_element) => (
                                 <SidebarMenuItem key={share_element.id} className="flex group">
-                                    <SidebarMenuButton>
+                                    <SidebarMenuButton data-mode={share_element.mode} data-title={share_element.title} data-id={share_element.todo_list_id} onClick={display_task}>
                                             <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-54"
                                                   data-id={share_element.todo_list_id}>{share_element.title}</span>
                                     </SidebarMenuButton>
@@ -762,21 +759,22 @@ export default function Todo_page() {
                                     <AccordionItem key={task_element.id} value={`task-${task_element.id}`} className="border-b">
                                         <div className="flex items-center gap-x-3 w-full">
                                             <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"}
-                                                onClick={changeTaskState}/>
+                                                onClick={changeTaskState} disabled={isReadOnly} />
                                             <Input
                                                 type="text"
                                                 maxLength={255}
                                                 data-id={task_element.id}
                                                 value={task_element.title}
                                                 onChange={changeTaskTitle}
-                                                onBlur={sendChangeValue}
-                                                onKeyDown={appendTask}
-                                                onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                onBlur={isReadOnly ? undefined : sendChangeValue}
+                                                onKeyDown={isReadOnly ? undefined : appendTask}
+                                                onFocus={isReadOnly ? undefined : (e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
-                                            <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
+                                            <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
                                         </div>
                                         {/* DESCRIPTION PANEL */}
                                         <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
@@ -785,9 +783,10 @@ export default function Todo_page() {
                                                 data-id={task_element.id}
                                                 value={task_element.description}
                                                 onChange={changeTaskDescription}
-                                                onBlur={sendChangeValue}
-                                                onKeyDown={appendTask}
-                                                onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                onBlur={isReadOnly ? undefined : sendChangeValue}
+                                                onKeyDown={isReadOnly ? undefined : appendTask}
+                                                readOnly={isReadOnly}
+                                                onFocus={isReadOnly ? undefined : (e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
                                             />
                                         </AccordionPanel>
                                     </AccordionItem>
@@ -796,9 +795,7 @@ export default function Todo_page() {
                         ) : (
                             <div>Choose todo</div>
                         )}
-                        <div className="h-full " onClick={appendTask}>
-
-                        </div>
+                        <div className="h-full " onClick={isReadOnly ? undefined : appendTask} />
                     </div>
 
                 </SidebarInset>
