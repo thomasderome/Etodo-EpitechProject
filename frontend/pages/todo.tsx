@@ -18,7 +18,7 @@ import {
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuItem,
-    SidebarMenuButton,
+    SidebarMenuButton, SidebarSeparator,
 } from '@/components/animate-ui/components/radix/sidebar';
 
 import {
@@ -55,9 +55,10 @@ import {useEffect} from "react";
 import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
 import { useRouter } from "next/navigation";
+import {ExternalLink} from "@/components/animate-ui/icons/external-link";
 
 interface TodoItem {
-    "id": number;
+    id: number;
     title: string;
     description: string;
     createdAt: string;
@@ -84,6 +85,15 @@ interface Setting_type {
     firstname: string;
 }
 
+interface Share_Type {
+    id: number
+    todo_list_id: number;
+    title: string;
+    status: string;
+    user_id: string;
+    mode: boolean;
+}
+
 export default function Todo_page() {
     const router = useRouter();
 
@@ -91,7 +101,12 @@ export default function Todo_page() {
 
     const [todo_data, set_todo_data] = React.useState<TodoItem[]>([]);
     const [user_data, set_user_data] = React.useState<User_type>();
+    const [share_data, set_share_data] = React.useState<Share_Type[] | null>(null)
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
+
+    const [share_state, set_share_state] = React.useState<boolean>(false);
+    const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
+    const [setting_state, set_setting_state] = React.useState(false);
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
@@ -108,9 +123,17 @@ export default function Todo_page() {
 
         instance.get("/user").then(response => {
             set_user_data(response.data);
-        }).catch((e) => {
+        }).catch(() => {
                 alert("Failed to load user data")
         });
+
+        instance.get("/share").then(res => {
+            set_share_data(res.data);
+            console.log("icicicicici")
+            console.log(share_data);
+        }).catch(() => {
+            alert("Failed to load share todo")
+        })
 
     }, []);
 
@@ -213,7 +236,6 @@ export default function Todo_page() {
 
         await instance.delete(`/todos/${id_element}`)
             .then(res => {
-                console.log(todo_data)
                 const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
                 set_todo_data([...filter]);
             })
@@ -222,8 +244,6 @@ export default function Todo_page() {
             })
     }
 
-    const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
-    const [setting_state, set_setting_state] = React.useState(false);
     function logout() {
         localStorage.removeItem("token");
         router.push("/login");
@@ -234,16 +254,12 @@ export default function Todo_page() {
                             email: user_data?.email ?? "email-default.com",
                             firstname: user_data?.firstname ?? "fistname-default",
                             password: ""});
-        set_sidebar_state(false);
 
-        setTimeout(() => {
-            set_setting_state(true);
-        }, 150);
+        set_setting_state(true);
     }
 
     function setting_apply(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
-        set_setting_state(false);
 
         instance.put("/user", setting_data)
             .then(res => {
@@ -254,9 +270,26 @@ export default function Todo_page() {
             })
     }
 
+    function open_share_setting(e: React.MouseEvent<HTMLDivElement>) {
+        instance.get(`/share/setting/${e.currentTarget.dataset.id}`)
+        .then(res => {
+            set_share_state(true);
+        }).catch(err => {
+            alert("Failed to load share setting");
+        })
+    }
+
+    function remove_share(e: React.MouseEvent<SVGSVGElement>) {
+        console.log("remove share");
+    }
+
+    function change_mode_share(e: React.MouseEvent<HTMLButtonElement>) {
+        console.log("Button change mode share");
+    }
+
     return (
         <>
-            <Dialog open={setting_state} onClose={() => set_setting_state(false)} className="relative z-[50]">
+            <Dialog open={setting_state} onClose={() => set_setting_state(false)} className="fixed inset-0 z-[100] flex items-center justify-center">
                 <DialogPanel>
                     <form>
                         <DialogHeader>
@@ -285,6 +318,30 @@ export default function Todo_page() {
                         <DialogFooter>
                             <Button onClick={() => set_setting_state(false)} type="button" variant="outline">Cancel</Button>
                             <Button onClick={setting_apply} type="submit">Save changes</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogPanel>
+            </Dialog>
+
+            <Dialog open={share_state} onClose={() => set_share_state(false)} className="fixed inset-0 z-[100] flex items-center justify-center">
+                <DialogPanel>
+                    <form>
+                        <DialogHeader className="mb-3">
+                            <DialogTitle>Account setting</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="m-2 overflow-y-scroll max-h-52">
+                            <div className="border-2 rounded-md p-2 flex mb-2">
+                                <span className="ml-1 bg-muted p-1 rounded-md">thomas.derome@epitech.eu</span>
+                                <Button type="button" className="ml-30 h-7" variant="secondary" onClick={change_mode_share} data-id={'id du share'}>Write</Button>
+                                <Trash2 className="text-red-600 w-4 ml-3" animateOnHover onClick={remove_share} data-id={'id du share'}/>
+                            </div>
+
+
+                        </div>
+
+                        <DialogFooter className="mt-8">
+                            <Button onClick={() => set_share_state(false)} type="button">Done</Button>
                         </DialogFooter>
                     </form>
                 </DialogPanel>
@@ -370,15 +427,47 @@ export default function Todo_page() {
                                                     <Brush />
                                                     <span className="text-xs font-semibold">Rename</span>
                                                 </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={open_share_setting} data-id={todo_element.id}>
+                                                    <ExternalLink />
+                                                    <span className="text-xs font-semibold">Share</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator/>
                                                 <DropdownMenuItem onClick={remove_todo} variant="destructive" data-id={todo_element.id}>
                                                     <Trash2 className="text-red-600"/>
                                                     <span className="text-xs font-semibold text-red-500" >Remove</span>
                                                 </DropdownMenuItem>
+
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </SidebarMenuItem>
                         ))}
+
+                    {share_data && share_data.length > 0 ? (
+                        <>
+
+                            <SidebarGroupLabel className="mt-5">
+                                <div className="flex">
+                                    <span className="text-sm">Share</span>
+                                </div>
+                            </SidebarGroupLabel>
+
+                            {share_data.map((share_element) => (
+                                <SidebarMenuItem key={share_element.id} className="flex group">
+                                    <SidebarMenuButton>
+                                            <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-54"
+                                                  data-id={share_element.todo_list_id}>{share_element.title}</span>
+                                    </SidebarMenuButton>
+                                    { share_element.status === 'in progress' ? (
+                                        <Loader animateOnHover={true} className="w-4 mr-2" />
+                                    ) : share_element.status === 'done' ? (
+                                        <CircleCheck animateOnHover={true} className="w-4 mr-2" />
+                                    ): null }
+
+                                </SidebarMenuItem>
+                            ))}
+                        </>
+                    ) : null}
                     </SidebarContent>
                 </Sidebar>
                 <SidebarInset>
