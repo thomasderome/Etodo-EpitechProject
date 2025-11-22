@@ -13,7 +13,7 @@ function generate_token(req, res, user_id) {
 router.post("/register", async(req, res) => {
     //verif arg
     const {email, password, name, firstname} = req.body;
-    console.log(name, email, password, firstname);
+
     if (typeof email !== "string" || typeof password !== "string" || typeof name !== "string" || typeof firstname !== "string" || !email || !password || !name || !firstname) {
         throw new TypeError();
     }
