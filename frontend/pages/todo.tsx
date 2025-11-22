@@ -18,7 +18,7 @@ import {
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuItem,
-    SidebarMenuButton, SidebarSeparator,
+    SidebarMenuButton,
 } from '@/components/animate-ui/components/radix/sidebar';
 
 import {
@@ -46,7 +46,7 @@ import {
     DialogPanel,
     DialogHeader,
     DialogTitle,
-    DialogFooter, DialogClose,
+    DialogFooter
 } from "@/components/animate-ui/components/headless/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,7 @@ import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
 import { useRouter } from "next/navigation";
 import {ExternalLink} from "@/components/animate-ui/icons/external-link";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 
 interface TodoItem {
     id: number;
@@ -86,12 +87,24 @@ interface Setting_type {
 }
 
 interface Share_Type {
-    id: number
+    id: number;
     todo_list_id: number;
     title: string;
     status: string;
     user_id: string;
     mode: boolean;
+}
+
+interface Share_Setting_Type {
+    all_shares: {
+        email: string;
+        id: number;
+        mode: boolean;
+    }[]
+
+    todo_list: {
+        id: number;
+    }
 }
 
 export default function Todo_page() {
@@ -104,9 +117,13 @@ export default function Todo_page() {
     const [share_data, set_share_data] = React.useState<Share_Type[] | null>(null)
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
 
-    const [share_state, set_share_state] = React.useState<boolean>(false);
     const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
     const [setting_state, set_setting_state] = React.useState(false);
+
+    const [share_state, set_share_state] = React.useState<boolean>(false);
+    const [share_setting, set_share_setting] = React.useState<Share_Setting_Type>();
+    const [share_mode, set_share_mode] = React.useState<boolean>(false);
+    const [add_share_errer, set_add_share_errer] = React.useState<boolean>(false);
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
@@ -124,13 +141,11 @@ export default function Todo_page() {
         instance.get("/user").then(response => {
             set_user_data(response.data);
         }).catch(() => {
-                alert("Failed to load user data")
+            alert("Failed to load user data")
         });
 
         instance.get("/share").then(res => {
             set_share_data(res.data);
-            console.log("icicicicici")
-            console.log(share_data);
         }).catch(() => {
             alert("Failed to load share todo")
         })
@@ -225,7 +240,7 @@ export default function Todo_page() {
             .then(res => {
                 set_todo_data([...todo_data, {...res.data, "edit": true}]);
             })
-            .catch(err => {
+            .catch(() => {
                 alert("Failed create todo");
             })
     }
@@ -235,11 +250,11 @@ export default function Todo_page() {
         const id_element = e.currentTarget.dataset.id;
 
         await instance.delete(`/todos/${id_element}`)
-            .then(res => {
+            .then(() => {
                 const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
                 set_todo_data([...filter]);
             })
-            .catch(err => {
+            .catch(() => {
                 alert("Failed for remove todo");
             })
     }
@@ -265,26 +280,78 @@ export default function Todo_page() {
             .then(res => {
                 set_user_data(res.data);
             })
-            .catch(err => {
+            .catch(() => {
                 alert("Failed for update user information");
             })
     }
 
     function open_share_setting(e: React.MouseEvent<HTMLDivElement>) {
-        instance.get(`/share/setting/${e.currentTarget.dataset.id}`)
+        const id = e.currentTarget.dataset.id;
+        instance.get(`/share/setting/${id}`)
         .then(res => {
+            set_share_setting({
+                todo_list: {id: Number(id)},
+                all_shares: res.data
+            });
             set_share_state(true);
-        }).catch(err => {
+        }).catch(() => {
             alert("Failed to load share setting");
         })
     }
 
+    function create_share(e: React.FormEvent<HTMLFormElement>) {
+        if (share_setting) {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+
+            instance.post("/share/setting/", {
+                todo_list_id: share_setting?.todo_list.id,
+                mode: share_mode,
+                email: formData.get("email")
+            }).then(res => {
+                set_share_setting({
+                    ...share_setting,
+                    all_shares: [...share_setting?.all_shares, res.data]
+                })
+            }).catch(() => {
+                set_add_share_errer(true);
+            })
+        }
+    }
+
     function remove_share(e: React.MouseEvent<SVGSVGElement>) {
-        console.log("remove share");
+        if (share_setting) {
+            const share_id = e.currentTarget.dataset.id;
+            instance.delete(`/share/setting/${share_id}`)
+                .then(() => {
+                    set_share_setting({
+                        ...share_setting,
+                        all_shares: share_setting.all_shares.filter((item) => share_id !== String(item.id))
+                    });
+                }).catch(() => {
+                alert("Failed to remove share");
+            })
+        }
     }
 
     function change_mode_share(e: React.MouseEvent<HTMLButtonElement>) {
-        console.log("Button change mode share");
+        if (share_setting) {
+            const share_id = e.currentTarget.dataset.id;
+            instance.patch(`/share/setting/${share_id}`)
+                .then(() => {
+                    const modif = share_setting?.all_shares.map((item) => {
+                        if (String(item.id) === share_id) return {...item, mode: !item.mode};
+                        return item;
+                    })
+                    set_share_setting({
+                        ...share_setting,
+                        all_shares: modif
+                    });
+                }).catch(() => {
+                alert("Failed to change mode");
+            })
+        }
+
     }
 
     return (
@@ -325,25 +392,46 @@ export default function Todo_page() {
 
             <Dialog open={share_state} onClose={() => set_share_state(false)} className="fixed inset-0 z-[100] flex items-center justify-center">
                 <DialogPanel>
-                    <form>
-                        <DialogHeader className="mb-3">
-                            <DialogTitle>Account setting</DialogTitle>
-                        </DialogHeader>
+                    <DialogHeader className="mb-3">
+                        <DialogTitle>Share setting</DialogTitle>
+                    </DialogHeader>
 
-                        <div className="m-2 overflow-y-scroll max-h-52">
+                    <div className="m-2 flex ">
+                        <form id="createShare" onSubmit={create_share} className={"flex"}>
+                            <TooltipProvider >
+                                <Tooltip open={add_share_errer} >
+                                    <TooltipTrigger asChild >
+                                        <Input type={"email"} name={"email"} required/>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="z-[150] bg-red-500 text-white border-red-600 ">
+                                        <p>This account not exist</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </form>
+
+                        <Button className="ml-1" type={"button"} onClick={() => set_share_mode(!share_mode)} >
+                            {share_mode ? "Write" : "Read-only"}
+                        </Button>
+
+                        <Button className="ml-0.5" type={"submit"} form="createShare" >
+                            <SquarePlus className="stroke-ring" />
+                        </Button>
+                    </div>
+
+                    {share_setting?.all_shares.map((share) => (
+                        <div className="m-2 overflow-y-scroll max-h-52" key={share.id}>
                             <div className="border-2 rounded-md p-2 flex mb-2">
-                                <span className="ml-1 bg-muted p-1 rounded-md">thomas.derome@epitech.eu</span>
-                                <Button type="button" className="ml-30 h-7" variant="secondary" onClick={change_mode_share} data-id={'id du share'}>Write</Button>
-                                <Trash2 className="text-red-600 w-4 ml-3" animateOnHover onClick={remove_share} data-id={'id du share'}/>
+                                <span className="ml-1 bg-muted p-1 rounded-md">{share.email}</span>
+                                <Button type="button" className="h-7 ml-auto" variant="secondary" onClick={change_mode_share} data-id={share.id}>{share.mode ? "Write" : "Read-only"}</Button>
+                                <Trash2 className="text-red-600 w-4 ml-3" animateOnHover onClick={remove_share} data-id={share.id}/>
                             </div>
-
-
                         </div>
+                    ))}
 
-                        <DialogFooter className="mt-8">
-                            <Button onClick={() => set_share_state(false)} type="button">Done</Button>
-                        </DialogFooter>
-                    </form>
+                    <DialogFooter className="mt-8">
+                        <Button onClick={() => set_share_state(false)} type="button">Done</Button>
+                    </DialogFooter>
                 </DialogPanel>
             </Dialog>
 
@@ -445,7 +533,6 @@ export default function Todo_page() {
 
                     {share_data && share_data.length > 0 ? (
                         <>
-
                             <SidebarGroupLabel className="mt-5">
                                 <div className="flex">
                                     <span className="text-sm">Share</span>
