@@ -57,7 +57,6 @@ router.patch('/check/:task_id', async (req, res) => {
 })
 
 router.delete('/:task_id', async (req, res) => {
-    const task_id = req.params.task_id;
     const taskDelete = await task_delete(req.params.task_id, req.user_id);
 
     res.send(taskDelete);
