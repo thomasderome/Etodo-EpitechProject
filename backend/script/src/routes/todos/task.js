@@ -28,12 +28,14 @@ router.post('/', async (req, res) => {
 
 router.put('/:task_id', async (req, res) => {
     const { title } = req.body;
+    const { description } = req.body;
     const task_id = req.params.task_id;
 
-    if (typeof title !== "string" || !title ) { throw new TypeError() }
+    if (typeof title !== "string" ||  typeof description !== "string") { throw new TypeError() }
 
     const result = await update_task({
         "title": title,
+        "description": description,
         "task_id": task_id,
         "user_id": req.user_id
     });
