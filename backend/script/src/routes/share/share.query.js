@@ -5,7 +5,7 @@ async function create_share(data) {
     if (!verif[0]) return null;
 
     const [user_share] = await pool.query("SELECT id FROM user WHERE email=?", [data.email_share]);
-    const [verif_share_exist] = await pool.query("SELECT user_id FROM shared_todo WHERE user_id=?", [user_share[0].id]);
+    const [verif_share_exist] = await pool.query("SELECT user_id FROM shared_todo WHERE user_id=? AND todo_list_id=?", [user_share[0].id, data.todo_id]);
     if (verif_share_exist[0]) return null
 
     const [id] = await pool.query("INSERT INTO shared_todo (user_id, todo_list_id, mode) VALUES (?, ?, ?)", [user_share[0].id, data.todo_id, data.mode]);
