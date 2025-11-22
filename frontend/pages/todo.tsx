@@ -46,14 +46,22 @@ import {
     DialogPanel,
     DialogHeader,
     DialogTitle,
-    DialogFooter
+    DialogFooter,
 } from "@/components/animate-ui/components/headless/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {useEffect} from "react";
 import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/animate-ui/components/headless/checkbox';
+import {
+    Accordion,
+    AccordionItem,
+    AccordionTrigger,
+    AccordionPanel,
+} from '@/components/animate-ui/components/base/accordion';
+
 import { useRouter } from "next/navigation";
 import {ExternalLink} from "@/components/animate-ui/icons/external-link";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
@@ -86,6 +94,28 @@ interface Setting_type {
     firstname: string;
 }
 
+interface task_interface {
+    header: {
+        id_todo: number;
+        title: string;
+    },
+    task_list: {
+        id: number;
+        title: string;
+        description: string;
+        status: "todo" | "done";
+    }[]
+}
+
+const data = {
+    header: {
+        id_todo: 10,
+        title: "Test",
+    },
+    task_list: [
+        {id: 45, title:"test", description:"Test 1", status:"todo"},
+        {id: 44, title:"tesszgt", description:"Test 2", status:"done"}
+    ]
 interface Share_Type {
     id: number;
     todo_list_id: number;
@@ -116,6 +146,7 @@ export default function Todo_page() {
     const [user_data, set_user_data] = React.useState<User_type>();
     const [share_data, set_share_data] = React.useState<Share_Type[] | null>(null)
     const [sidebar_state, set_sidebar_state] = React.useState<boolean>(!isMobile);
+    const [task_data, set_task_data] = React.useState<task_interface | null>(null);
 
     const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
     const [setting_state, set_setting_state] = React.useState(false);
@@ -253,12 +284,167 @@ export default function Todo_page() {
             .then(() => {
                 const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
                 set_todo_data([...filter]);
+                set_task_data(null);
             })
             .catch(() => {
                 alert("Failed for remove todo");
             })
     }
 
+    // SYSTEM FOR DISPLAY TASK IN TODO
+    async function display_task(e: React.MouseEvent<HTMLDivElement>){
+        const title = e.currentTarget.dataset.title
+        const id = Number(e.currentTarget.dataset.id)
+
+        if (title && id) {
+            instance.get(`/tasks/${id}`)
+                .then(res => {
+                    set_task_data({
+                        header: {
+                            id_todo: id,
+                            title: title
+                        },
+                        task_list: res.data
+                    })
+                })
+        }
+    }
+
+    // FUNCTION THAT ADD NEW INPUT
+    async function appendTask(e: React.MouseEvent<HTMLDivElement> | React.KeyboardEventHandler<HTMLDivElement>){
+        if ("key" in e){
+            if (e.key !== "Enter") return;
+        }
+        if (task_data) {
+            await instance.post("/tasks", {
+                title: "New task",
+                description: "New description",
+                todo_id: task_data.header.id_todo
+            })
+                .then(res => {
+                    set_task_data({
+                        header: {...task_data.header},
+                        task_list: [...task_data.task_list, res.data]
+                    })
+                })
+        }
+
+    }
+
+    // FUNCTION THAT CHANGE VALUE
+    function changeTaskTitle(e: React.MouseEvent<HTMLInputElement>) {
+        e.currentTarget.dataset.update = "true";
+        const newData = task_data?.task_list.map((task) => {
+            if (e.currentTarget.dataset.id === String(task.id)) {
+                return {...task, title: e.currentTarget.value};
+            } else {
+                return task;
+            }
+        })
+        if (task_data && newData) {
+            set_task_data({
+                header: {...task_data.header},
+                task_list: newData
+            })
+        }
+
+    }
+    // FUNCTION THAT SEND CHANGED VALUE
+    async function sendChangeValue(e: React.MouseEvent<HTMLInputElement>){
+        const currentTarget = e.currentTarget;
+        const taskId = currentTarget.dataset.id;
+
+        if (!task_data || currentTarget.dataset?.update !== "true" || !taskId) {
+            return;
+        }
+        const task = task_data.task_list.find(
+            (element) => String(element.id) === taskId
+        );
+        if (!task) {
+            console.error("Tâche non trouvée pour l'ID:", taskId);
+            return;
+        }
+        await instance.put(`/tasks/${taskId}`, {
+            title: task.title,
+            description: task.description
+        }).then(res => {
+            const newData = task_data.task_list.map((t) => {
+                if (taskId === String(t.id)) {
+                    return res.data;
+                } else {
+                    return t;
+                }
+            })
+            set_task_data({
+                header: {...task_data.header},
+                task_list: newData
+            })
+        })
+        currentTarget.dataset.update = "false";
+    }
+
+    // FUNCTION THAT CHANGE DESCRIPTION VALUE FOR TASK
+    async function changeTaskDescription(e: React.KeyboardEvent<HTMLInputElement>) {
+        e.currentTarget.dataset.update = "true";
+        const newData = task_data?.task_list.map((task) => {
+            if (e.currentTarget.dataset.id === String(task.id)) {
+                return {...task, description: e.currentTarget.value};
+            } else {
+                return task;
+            }
+        })
+        if (task_data && newData) {
+            set_task_data({
+                header: {...task_data.header},
+                task_list: newData
+            })
+        }
+    }
+
+    async function changeTaskState(e: React.ChangeEvent<HTMLInputElement>) {
+        const currentTarget = e.currentTarget;
+        if (task_data) {
+            await instance.patch(`/tasks/check/${e.currentTarget.dataset.id}`)
+                .then(res => {
+                    const newData = task_data?.task_list.map((task) => {
+                        if (currentTarget.dataset.id === String(task.id)) {
+                            return res.data;
+                        } else {
+                            return task;
+                        }
+                })
+                set_task_data({
+                    header: {...task_data.header},
+                    task_list: newData
+                })
+            })
+        }
+    }
+
+    //FUNCTION FOR DELETE TASK
+    async function deleteTask(e: React.MouseEvent<HTMLDivElement>) {
+        const taskId = e.currentTarget.dataset.id;
+
+
+        if (task_data) {
+            await instance.delete(`/tasks/${taskId}`)
+            .then(res => {
+                const filter = task_data.task_list.filter((item) => String(item.id) !== taskId);
+                set_task_data({
+                    header: {...task_data.header},
+                    task_list: filter
+                })
+            })
+                .catch(err => {
+                    alert("Error deleting task");
+                })
+        }
+    }
+
+
+    const [setting_data, set_setting_data] = React.useState<Setting_type>();
+    const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
+    const [setting_state, set_setting_state] = React.useState(false);
     function logout() {
         localStorage.removeItem("token");
         router.push("/login");
@@ -488,7 +674,7 @@ export default function Todo_page() {
                         </SidebarGroupLabel>
                         {todo_data.map((todo_element) => (
                                 <SidebarMenuItem key={todo_element.id} className="flex group">
-                                    <SidebarMenuButton>
+                                    <SidebarMenuButton data-title={todo_element.title} data-id={todo_element.id} onClick={display_task}>
                                         <span className="focus:outline-indigo-50 focus:outline-1 focus:rounded-xs selection:bg-blue-500 max-w-54"
                                               contentEditable={todo_element?.edit ? todo_element.edit : false}
                                               ref={todo_element?.edit ? focus_item : null}
@@ -563,10 +749,58 @@ export default function Todo_page() {
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Breadcrumb>
-                                <BreadcrumbItem>Name of todo</BreadcrumbItem>
+                                <BreadcrumbItem>{task_data ? task_data.header.title : "Choose Todo"}</BreadcrumbItem>
                             </Breadcrumb>
                         </div>
                     </header>
+
+                    {/* DIV todo list */}
+                    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                        {task_data ? (
+                            <Accordion multiple={false} className="w-full">
+                                {task_data.task_list.map((task_element) => (
+                                    <AccordionItem key={task_element.id} value={`task-${task_element.id}`} className="border-b">
+                                        <div className="flex items-center gap-x-3 w-full">
+                                            <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"}
+                                                onClick={changeTaskState}/>
+                                            <Input
+                                                type="text"
+                                                maxLength={255}
+                                                data-id={task_element.id}
+                                                value={task_element.title}
+                                                onChange={changeTaskTitle}
+                                                onBlur={sendChangeValue}
+                                                onKeyDown={appendTask}
+                                                onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
+                                            />
+                                            <AccordionTrigger showArrow={true} className="flex-1 justify-start">
+                                            </AccordionTrigger>
+                                            <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
+                                        </div>
+                                        {/* DESCRIPTION PANEL */}
+                                        <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
+                                            <Input
+                                                type="text"
+                                                data-id={task_element.id}
+                                                value={task_element.description}
+                                                onChange={changeTaskDescription}
+                                                onBlur={sendChangeValue}
+                                                onKeyDown={appendTask}
+                                                onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                            />
+                                        </AccordionPanel>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        ) : (
+                            <div>Choose todo</div>
+                        )}
+                        <div className="h-full " onClick={appendTask}>
+
+                        </div>
+                    </div>
+
                 </SidebarInset>
             </SidebarProvider>
         </>

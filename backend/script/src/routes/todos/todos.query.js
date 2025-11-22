@@ -22,8 +22,8 @@ async function updateTodo(data){
     return rows[0];
 }
 
-async function deleteTodo(todoID){
-    const [rows] = await pool.query("DELETE FROM todo WHERE id=?", [todoID]);
+async function deleteTodo(todoID, userID){
+    const [rows] = await pool.query("DELETE FROM todo WHERE id=? AND user_id=?", [todoID, userID]);
     return rows;
 }
 

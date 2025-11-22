@@ -10,6 +10,7 @@
     "build:android": "npm run cap:build && chmod +x android/gradlew && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
+    "@base-ui-components/react": "^1.0.0-beta.6",
     "@capacitor/android": "^7.4.4",
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
