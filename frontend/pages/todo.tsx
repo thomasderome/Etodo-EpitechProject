@@ -289,7 +289,7 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT CHANGE VALUE
-    function changeTaskTitle(e: React.KeyboardEvent<HTMLInputElement>) {
+    function changeTaskTitle(e: React.MouseEvent<HTMLInputElement>) {
         e.currentTarget.dataset.update = "true";
         const newData = task_data?.task_list.map((task) => {
             if (e.currentTarget.dataset.id === String(task.id)) {
@@ -309,23 +309,35 @@ export default function Todo_page() {
     // FUNCTION THAT SEND CHANGED VALUE
     async function sendChangeValue(e: React.MouseEvent<HTMLInputElement>){
         const currentTarget = e.currentTarget;
-        if (task_data && e.currentTarget.dataset?.update === "true") {
-            await instance.put(`/tasks/${e.currentTarget.dataset.id}`, {
-                title: e.currentTarget.value ? e.currentTarget.value : "New task"
-            }).then(res => {
-                const newData = task_data?.task_list.map((task) => {
-                    if (currentTarget.dataset.id === String(task.id)) {
-                        return res.data;
-                    } else {
-                        return task;
-                    }
-                })
-                set_task_data({
-                    header: {...task_data.header},
-                    task_list: newData
-                })
+        const taskId = currentTarget.dataset.id;
+
+        if (!task_data || currentTarget.dataset?.update !== "true" || !taskId) {
+            return;
+        }
+        const task = task_data.task_list.find(
+            (element) => String(element.id) === taskId
+        );
+        if (!task) {
+            console.error("Tâche non trouvée pour l'ID:", taskId);
+            return;
+        }
+        await instance.put(`/tasks/${taskId}`, {
+            title: task.title,
+            description: task.description
+        }).then(res => {
+            const newData = task_data.task_list.map((t) => {
+                if (taskId === String(t.id)) {
+                    return res.data;
+                } else {
+                    return t;
+                }
             })
-            currentTarget.dataset.update = "false";        }
+            set_task_data({
+                header: {...task_data.header},
+                task_list: newData
+            })
+        })
+        currentTarget.dataset.update = "false";
     }
 
     // FUNCTION THAT CHANGE DESCRIPTION VALUE FOR TASK
@@ -565,17 +577,18 @@ export default function Todo_page() {
                                         <div className="flex items-center gap-x-3 w-full">
                                             <Checkbox size="default" data-id={task_element.id} checked={task_element.status === "done"}
                                                 onClick={changeTaskState}/>
+                                            <Input
+                                                type="text"
+                                                maxLength={255}
+                                                data-id={task_element.id}
+                                                value={task_element.title}
+                                                onChange={changeTaskTitle}
+                                                onBlur={sendChangeValue}
+                                                onKeyDown={appendTask}
+                                                onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
+                                            />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
-                                                <Input
-                                                    type="text"
-                                                    maxLength={255}
-                                                    data-id={task_element.id}
-                                                    value={task_element.title}
-                                                    onChange={changeTaskTitle}
-                                                    onBlur={sendChangeValue}
-                                                    onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
-                                                    className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
-                                                />
                                             </AccordionTrigger>
                                             <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>
                                         </div>
@@ -586,8 +599,10 @@ export default function Todo_page() {
                                                 data-id={task_element.id}
                                                 value={task_element.description}
                                                 onChange={changeTaskDescription}
+                                                onBlur={sendChangeValue}
+                                                onKeyDown={appendTask}
+                                                onFocus={(e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
                                             />
-
                                         </AccordionPanel>
                                     </AccordionItem>
                                 ))}
