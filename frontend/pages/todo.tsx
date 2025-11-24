@@ -65,13 +65,11 @@ import {
 import { useRouter } from "next/navigation";
 import {ExternalLink} from "@/components/animate-ui/icons/external-link";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {Textarea} from "@/components/ui/textarea";
 
 interface TodoItem {
     id: number;
     title: string;
-    description: string;
-    createdAt: string;
-    due_time: string;
     status: string;
     user_id: string;
     edit: boolean;
@@ -103,7 +101,9 @@ interface task_interface {
         id: number;
         title: string;
         description: string;
-        status: "todo" | "done";
+        due_time: string;
+        created_at: string;
+        status: "todo" | "in progress" | "done";
     }[],
     share?: {
         readonly: boolean;
@@ -214,7 +214,8 @@ export default function Todo_page() {
         // VERIFIE SI LE TITRE N'EST PAS VIDE AU SINON METTRE CELUI PAR DEFAUT
         if (!e.currentTarget.textContent) e.currentTarget.textContent = "New todo";
 
-        // SYSTEM POUR SEND LES MODFIS NAME DE LA TODO
+        // SYSTEM POUR SEND LES MODIFS NAME DE LA TODO
+
         // RECUPERE L'ID e.target.id et est son nom e.target.textContent
         const id_todo = e.currentTarget.dataset.id;
 
@@ -222,7 +223,6 @@ export default function Todo_page() {
             if (item.id == Number(id_todo)) {
                 const res = await instance.put(`/todos/${id_todo}`, {
                     ...item,
-                    "due_time": item.due_time.slice(0, 19).replace('T', ' '),
                     "title": e.currentTarget.textContent
                 })
                 return {...res.data}
@@ -254,12 +254,8 @@ export default function Todo_page() {
     // SYSTEM FOR ADD TODO
     function add_todo() {
         {/* ADD THE REQUEST IN FUTURE FOR API */}
-        const date = new Date();
-
         instance.post("/todos", {
             "title": "New todo",
-            "description": "No description",
-            "due_time": `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
             "status": "todo"
         })
             .then(res => {
@@ -315,9 +311,11 @@ export default function Todo_page() {
             if (e.key !== "Enter") return;
         }
         if (task_data) {
+            const date = new Date();
             await instance.post("/tasks", {
                 title: "New task",
                 description: "New description",
+                due_time: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
                 todo_id: task_data.header.id_todo
             })
                 .then(res => {
@@ -365,7 +363,8 @@ export default function Todo_page() {
         }
         await instance.put(`/tasks/${taskId}`, {
             title: task.title,
-            description: task.description
+            description: task.description,
+            due_time: task.due_time
         }).then(res => {
             const newData = task_data.task_list.map((t) => {
                 if (taskId === String(t.id)) {
@@ -678,7 +677,8 @@ export default function Todo_page() {
                                               onKeyDown={apply_rename}
                                               onBlur={apply_rename}
                                               data-id={todo_element.id}
-                                              suppressContentEditableWarning={true}>{todo_element.title}</span>
+                                              suppressContentEditableWarning={true}>{todo_element.title}
+                                        </span>
                                     </SidebarMenuButton>
 
                                     { todo_element.status === 'in progress' ? (
@@ -772,19 +772,25 @@ export default function Todo_page() {
                                                 readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
+                                            {/* INPUT OF DATE */}
+                                            <Input
+                                                type="date"
+                                                data-id={task_element.id}
+                                                value={task_element.due_time}
+                                                onBlur={isReadOnly ? undefined : sendChangeValue}
+                                            />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
                                             <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
                                         </div>
                                         {/* DESCRIPTION PANEL */}
                                         <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
-                                            <Input
+                                            <Textarea
                                                 type="text"
                                                 data-id={task_element.id}
                                                 value={task_element.description}
                                                 onChange={changeTaskDescription}
                                                 onBlur={isReadOnly ? undefined : sendChangeValue}
-                                                onKeyDown={isReadOnly ? undefined : appendTask}
                                                 readOnly={isReadOnly}
                                                 onFocus={isReadOnly ? undefined : (e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
                                             />
