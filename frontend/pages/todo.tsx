@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import instance from "@/lib/axios";
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
 import {
     Breadcrumb,
@@ -134,7 +134,7 @@ interface Share_Setting_Type {
 
 export default function Todo_page() {
     const router = useRouter();
-    const socket = useState([]);
+    const [socket, set_socket] = useState<Socket | null>(null);
 
     const isMobile = useIsMobile();
 
@@ -171,16 +171,26 @@ export default function Todo_page() {
             set_share_data(res.data);
         }).catch(() => {})
 
-        const socket = io('http://127.0.0.1:3001', {
+        const socket_instance = io('http://127.0.0.1:3001', {
             auth: {
                 token: localStorage.getItem("token"),
             }
         });
 
-        socket.on("connect", () => console.log("Websocket connected"));
-        socket.on("disconnect", () => console.log("Websocket disconnected"));
+        socket_instance.on("connect", () => console.log("Websocket connected"));
+        socket_instance.on("disconnect", () => console.log("Websocket disconnected"));
+        socket_instance.on("notification", (data) => console.log("Notification: ", data));
 
+        set_socket(socket_instance);
+        return () => {
+            socket_instance.disconnect();
+        }
     }, []);
+
+    useEffect(() => {
+        const todo_id = task_data?.header.id_todo;
+        if (todo_id !== null) socket?.emit('join_todo', todo_id);
+    }, [task_data?.header.id_todo])
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
     const focus_item = React.useRef<HTMLSpanElement>(null);

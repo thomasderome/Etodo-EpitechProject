@@ -35,28 +35,28 @@ io.use((socket, next) => {
 })
 
 io.on("connection", (socket) => {
-    console.log(`Connected on ${socket.id}`);
+    console.log(`The user ${socket.user_id} connected on ${socket.id}`);
+    socket.join(`user:${socket.user_id}`);
 
     socket.on("disconnect", () => {
         console.log(`Disconnected from ${socket.id}`);
     })
 
-    socket.on("todo_rename", function (socket) {
-        console.log(`rename_tod trigger: ${socket}`)
+    socket.on("join_todo", (todo_id) => {
+        socket.rooms.forEach((room) => {
+            if (room.startsWith("todo:")) {
+                console.log(room)
+                socket.leave(room);
+                return;
+            }
+        });
+
+        socket.join(`todo_id:${todo_id}`);
+        io.to(`user:${socket.user_id}`).emit(`notification`, `You are join this todo ${todo_id}`);
     })
-})
-
-io.on("todo_list/:id", function (socket) {
 
 })
 
-io.on("task/:id", function (socket) {
-
-})
-
-io.on("share/:id", function (socket) {
-
-})
 
 app.set("io", io);
 
