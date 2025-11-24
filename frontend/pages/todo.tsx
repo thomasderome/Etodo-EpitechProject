@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import instance from "@/lib/axios";
+import { io } from 'socket.io-client';
 
 import {
     Breadcrumb,
@@ -50,7 +51,7 @@ import {
 } from "@/components/animate-ui/components/headless/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {Loader} from "@/components/animate-ui/icons/loader"
 import {CircleCheck} from "@/components/animate-ui/icons/circle-check"
 import { Label } from '@/components/ui/label';
@@ -133,6 +134,7 @@ interface Share_Setting_Type {
 
 export default function Todo_page() {
     const router = useRouter();
+    const socket = useState([]);
 
     const isMobile = useIsMobile();
 
@@ -158,22 +160,25 @@ export default function Todo_page() {
             if (e.status === 403) {
                 localStorage.removeItem("token");
                 router.push("/login");
-            } else {
-                alert("Failed to load todo");
             }
         });
 
         instance.get("/user").then(response => {
             set_user_data(response.data);
-        }).catch(() => {
-            alert("Failed to load user data")
-        });
+        }).catch(() => {});
 
         instance.get("/share").then(res => {
             set_share_data(res.data);
-        }).catch(() => {
-            alert("Failed to load share todo")
-        })
+        }).catch(() => {})
+
+        const socket = io('http://127.0.0.1:3001', {
+            auth: {
+                token: localStorage.getItem("token"),
+            }
+        });
+
+        socket.on("connect", () => console.log("Websocket connected"));
+        socket.on("disconnect", () => console.log("Websocket disconnected"));
 
     }, []);
 
@@ -221,7 +226,7 @@ export default function Todo_page() {
         const promise = todo_data.map(async (item) => {
             if (item.id == Number(id_todo)) {
                 const res = await instance.put(`/todos/${id_todo}`, {
-                    ...item,
+                     ...item,
                     "due_time": item.due_time.slice(0, 19).replace('T', ' '),
                     "title": e.currentTarget.textContent
                 })
@@ -434,7 +439,7 @@ export default function Todo_page() {
                     task_list: filter
                 })
             })
-                .catch(err => {
+                .catch(() => {
                     alert("Error deleting task");
                 })
         }
@@ -774,7 +779,7 @@ export default function Todo_page() {
                                             />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
-                                            <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
+                                            {isReadOnly ? undefined : <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>}
                                         </div>
                                         {/* DESCRIPTION PANEL */}
                                         <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
