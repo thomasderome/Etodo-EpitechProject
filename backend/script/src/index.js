@@ -1,5 +1,6 @@
 require("dotenv").config({path: "../.env"});
 const bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
 const express = require("express");
 const verif_token = require("./middleware/auth");
 const cors = require("cors");
@@ -20,12 +21,41 @@ const io = new Server(server, {
 app.use(cors());
 app.use(bodyParser.json());
 
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+
+    if (!token) next(new Error("Token is not valid"));
+
+    try {
+        const verify_token = jwt.verify(token, process.env.SECRET);
+
+        socket.user_id = verify_token.id;
+        if (verify_token) next();
+    } catch { next(new Error("Token is not valid")); }
+})
+
 io.on("connection", (socket) => {
     console.log(`Connected on ${socket.id}`);
 
     socket.on("disconnect", () => {
         console.log(`Disconnected from ${socket.id}`);
     })
+
+    socket.on("todo_rename", function (socket) {
+        console.log(`rename_tod trigger: ${socket}`)
+    })
+})
+
+io.on("todo_list/:id", function (socket) {
+
+})
+
+io.on("task/:id", function (socket) {
+
+})
+
+io.on("share/:id", function (socket) {
+
 })
 
 app.set("io", io);
