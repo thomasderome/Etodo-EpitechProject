@@ -280,7 +280,7 @@ export default function Todo_page() {
     }
 
     // SYSTEM FOR DISPLAY TASK IN TODO
-    async function display_task(e: React.MouseEvent<HTMLDivElement>){
+    async function display_task(e: React.MouseEvent<HTMLButtonElement>){
         const title = e.currentTarget.dataset.title
         const id = Number(e.currentTarget.dataset.id)
 
@@ -304,7 +304,7 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT ADD NEW INPUT
-    async function appendTask(e: React.MouseEvent<HTMLDivElement> | React.KeyboardEventHandler<HTMLDivElement>){
+    async function appendTask(e: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>){
         if ("key" in e){
             if (e.key !== "Enter") return;
         }
@@ -327,7 +327,7 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT CHANGE VALUE
-    function changeTaskTitle(e: React.MouseEvent<HTMLInputElement>) {
+    function changeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
         e.currentTarget.dataset.update = "true";
         const newData = task_data?.task_list.map((task) => {
             if (e.currentTarget.dataset.id === String(task.id)) {
@@ -345,7 +345,7 @@ export default function Todo_page() {
 
     }
     // FUNCTION THAT SEND CHANGED VALUE
-    async function sendChangeValue(e: React.MouseEvent<HTMLInputElement>){
+    async function sendChangeValue(e: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>){
         const currentTarget = e.currentTarget;
         const taskId = currentTarget.dataset.id;
 
@@ -380,7 +380,7 @@ export default function Todo_page() {
     }
 
     // FUNCTION THAT CHANGE DESCRIPTION VALUE FOR TASK
-    async function changeTaskDescription(e: React.KeyboardEvent<HTMLInputElement>) {
+    async function changeTaskDescription(e: React.ChangeEvent<HTMLTextAreaElement>) {
         e.currentTarget.dataset.update = "true";
         const newData = task_data?.task_list.map((task) => {
             if (e.currentTarget.dataset.id === String(task.id)) {
@@ -397,7 +397,7 @@ export default function Todo_page() {
         }
     }
 
-    async function changeTaskState(e: React.ChangeEvent<HTMLInputElement>) {
+    async function changeTaskState(e: React.MouseEvent<HTMLButtonElement>) {
         const currentTarget = e.currentTarget;
         if (task_data) {
             await instance.patch(`/tasks/check/${e.currentTarget.dataset.id}`)
@@ -438,7 +438,7 @@ export default function Todo_page() {
     }
 
     //FUNCTION FOR DELETE TASK
-    async function deleteTask(e: React.MouseEvent<HTMLDivElement>) {
+    async function deleteTask(e: React.MouseEvent<SVGSVGElement>) {
         const taskId = e.currentTarget.dataset.id;
 
 
@@ -706,7 +706,7 @@ export default function Todo_page() {
                                     ): null }
 
                                     <DropdownMenu modal={false}>
-                                        <DropdownMenuTrigger className="outline-none" onFocus={(e) => {e.preventDefault()}}><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
+                                        <DropdownMenuTrigger className="outline-none ml-auto" onFocus={(e) => {e.preventDefault()}}><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
 
                                         <DropdownMenuContent side={isMobile ? 'bottom' : 'left'} align="start" onCloseAutoFocus={(e) => {e.preventDefault();}}>
                                             <DropdownMenuLabel>Todo Interaction</DropdownMenuLabel>
@@ -790,6 +790,12 @@ export default function Todo_page() {
                                                 readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
+                                            <Input
+                                                className="w-40 min-w-30"
+                                                type="date"
+                                                value={task_element.created_at.split("T")[0]}
+                                                readOnly
+                                            />
                                             {/* INPUT OF DATE */}
                                             <Input
                                                 type="date"
@@ -797,21 +803,21 @@ export default function Todo_page() {
                                                 value={task_element.due_time.split("T")[0]}
                                                 onBlur={isReadOnly ? undefined : sendChangeValue}
                                                 onChange={changeTaskDueTime}
+                                                className="w-45 min-w-35"
                                             />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
-                                            <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
+                                            <Trash2 className="text-red-600 ml-auto min-w-5 " animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
                                         </div>
                                         {/* DESCRIPTION PANEL */}
                                         <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
                                             <Textarea
-                                                type="text"
                                                 data-id={task_element.id}
                                                 value={task_element.description}
                                                 onChange={changeTaskDescription}
                                                 onBlur={isReadOnly ? undefined : sendChangeValue}
                                                 readOnly={isReadOnly}
-                                                onFocus={isReadOnly ? undefined : (e: React.FocusEvent<HTMLInputElement>) => {e.currentTarget.select()}}
+                                                onFocus={isReadOnly ? undefined : (e: React.FocusEvent<HTMLTextAreaElement>) => {e.currentTarget.select()}}
                                             />
                                         </AccordionPanel>
                                     </AccordionItem>
