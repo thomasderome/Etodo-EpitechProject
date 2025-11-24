@@ -186,8 +186,6 @@ export default function Todo_page() {
             const range = document.createRange();
             // SELECT THE ELEMENT FOR CHANGE THE RANGE
             range.selectNodeContents(focus_item.current);
-            // SET THE CURSOR TO THE END
-            range.collapse(false);
 
             const sel = window.getSelection();
             if (sel) {
@@ -364,7 +362,7 @@ export default function Todo_page() {
         await instance.put(`/tasks/${taskId}`, {
             title: task.title,
             description: task.description,
-            due_time: task.due_time
+            due_time: task.due_time.split("T")[0]
         }).then(res => {
             const newData = task_data.task_list.map((t) => {
                 if (taskId === String(t.id)) {
