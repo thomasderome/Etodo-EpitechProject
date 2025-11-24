@@ -27,17 +27,17 @@ router.post('/', async (req, res) => {
 })
 
 router.put('/:task_id', async (req, res) => {
-    const { title } = req.body;
-    const { description } = req.body;
+    const { title, description, due_time } = req.body;
     const task_id = req.params.task_id;
 
-    if (typeof title !== "string" ||  typeof description !== "string") { throw new TypeError() }
+    if (typeof title !== "string" ||  typeof description !== "string" || typeof due_time !== "string") { throw new TypeError() }
 
     const result = await update_task({
         "title": title,
         "description": description,
+        "due_time": due_time,
         "task_id": task_id,
-        "user_id": req.user_id
+        "user_id": req.user_id,
     });
 
     if (!result) return res.status(403).send();

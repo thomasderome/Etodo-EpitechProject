@@ -29,8 +29,7 @@ async function update_task(data) {
     const [verif] = await pool.query("SELECT * FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id = ? AND todo.user_id = ?", [data.task_id, data.user_id]);
 
     if (!verif[0]) {return null}
-
-    await pool.query("UPDATE task SET title=?, description=? WHERE id=?", [data.title, data.description, data.task_id]);
+    await pool.query("UPDATE task SET title=?, description=?, due_time=? WHERE id=?", [data.title, data.description, data.due_time, data.task_id]);
     const [result] = await pool.query("SELECT * FROM task WHERE id = ?", [data.task_id]);
 
     return result[0];
