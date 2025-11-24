@@ -11,7 +11,7 @@ async function create_task(data) {
     const [verif] = await pool.query("SELECT user_id FROM todo WHERE id = ? AND user_id = ?", [data.todo_id, data.user_id]);
     if (!verif[0]) {return null}
 
-    const [id] = await pool.query("INSERT INTO task (title, description, todo_id) VALUES (?, ?, ?)", [data.title, data.description, data.todo_id]);
+    const [id] = await pool.query("INSERT INTO task (title, description, due_time, todo_id) VALUES (?, ?, ?, ?)", [data.title, data.description, data.due_time, data.todo_id]);
     const [result] = await pool.query("SELECT * FROM task WHERE id = ?", [id.insertId]);
     return result[0];
 }

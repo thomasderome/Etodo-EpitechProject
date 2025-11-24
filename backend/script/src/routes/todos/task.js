@@ -9,13 +9,14 @@ router.get('/:id_todo', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-    const {title, description, todo_id} = req.body;
+    const {title, description, due_time, todo_id} = req.body;
 
-    if (typeof title !== "string" || typeof description !== "string" || typeof todo_id !== "number" || !description || !title || !todo_id) { throw new TypeError() }
+    if (typeof title !== "string" || typeof description !== "string" || typeof due_time !== "string" || typeof todo_id !== "number" || !description || !title || !due_time || !todo_id) { throw new TypeError() }
 
     const response = await create_task({
         "title": title,
         "description": description,
+        "due_time": due_time,
         "todo_id": todo_id,
         "user_id": req.user_id
     });
