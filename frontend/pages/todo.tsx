@@ -419,6 +419,26 @@ export default function Todo_page() {
         }
     }
 
+    //FUNCTION FOR CHANGE TASK DUE TIME
+    async function changeTaskDueTime(e: React.ChangeEvent<HTMLInputElement>) {
+        e.currentTarget.dataset.update = "true";
+        const newData = task_data?.task_list.map((task) => {
+            if (e.currentTarget.dataset.id === String(task.id)) {
+                console.log(e.currentTarget.value);
+                return {...task, due_time: e.currentTarget.value.split('T')[0]};
+            } else {
+                return task;
+            }
+        })
+        if (task_data && newData) {
+            set_task_data({
+                header: task_data.header,
+                task_list: newData
+            })
+            console.log(task_data)
+        }
+    }
+
     //FUNCTION FOR DELETE TASK
     async function deleteTask(e: React.MouseEvent<HTMLDivElement>) {
         const taskId = e.currentTarget.dataset.id;
@@ -776,8 +796,9 @@ export default function Todo_page() {
                                             <Input
                                                 type="date"
                                                 data-id={task_element.id}
-                                                value={task_element.due_time}
+                                                value={task_element.due_time.split("T")[0]}
                                                 onBlur={isReadOnly ? undefined : sendChangeValue}
+                                                onChange={changeTaskDueTime}
                                             />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
