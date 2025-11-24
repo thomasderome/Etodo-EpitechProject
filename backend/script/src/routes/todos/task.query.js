@@ -3,7 +3,7 @@ const { pool} = require('../../config/db');
 async function get_all_task(todo_id, user_id) {
     let [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id WHERE task.todo_id = ? AND todo.user_id = ?", [todo_id, user_id]);
 
-    if (result.length === 0) [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id JOIN shared_todo ON shared_todo.todo_list_id=todo.id WHERE task.todo_id = ? AND shared_todo.user_id", [todo_id, user_id]);
+    if (result.length === 0) [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id JOIN shared_todo ON shared_todo.todo_list_id=todo.id WHERE task.todo_id = ? AND shared_todo.user_id=?", [todo_id, user_id]);
     return result;
 }
 
