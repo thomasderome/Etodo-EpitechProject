@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
 import {
     Tabs,
@@ -28,19 +28,19 @@ import {
 import { StarsBackground } from '@/components/animate-ui/components/backgrounds/stars';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import instance from "@/lib/axios";
-import { useState} from "react";
-import { useRouter } from "next/navigation";
+import instance from '@/lib/axios';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface RippleButtonDemoProps {
-    variant: "login" | "register";
+    variant: 'login' | 'register';
     size: RippleButtonProps['size'];
     type: RippleButtonProps['type'];
     form: RippleButtonProps['form'];
 }
 
 /* body de la page, tout ce qu'elle contient*/
-export default function LoginPage (){
+export default function LoginPage() {
     return (
         <main className="-z-10">
             {/* importation élément background */}
@@ -67,43 +67,45 @@ export function AnimateTabsDemo() {
         firstname: '',
         email: '',
         password: '',
-    })
+    });
 
     //  Gestion des changements d’input
     const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
-        setLoginData(prev => ({ ...prev, [id.replace('-login', '')]: value }));
+        setLoginData((prev) => ({ ...prev, [id.replace('-login', '')]: value }));
     };
 
     const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
-        setRegisterData(prev => ({ ...prev, [id.replace('-register', '')]: value }));
+        setRegisterData((prev) => ({ ...prev, [id.replace('-register', '')]: value }));
     };
 
     const submitLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("Login data:", loginData);
+        console.log('Login data:', loginData);
 
-        instance.post("/login", loginData)
-        .then(() => {
-            router.push("/todo");
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+        instance
+            .post('/login', loginData)
+            .then(() => {
+                router.push('/todo');
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     };
 
     const submitRegister = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("Register data:", registerData)
+        console.log('Register data:', registerData);
 
-        instance.post("/register", registerData)
+        instance
+            .post('/register', registerData)
             .then(() => {
-                router.push("/todo");
+                router.push('/todo');
             })
             .catch((err) => {
                 console.log(err);
-            })
+            });
     };
 
     return (
@@ -128,17 +130,36 @@ export function AnimateTabsDemo() {
                                 <form className="grid gap-6" id="formLogin" onSubmit={submitLogin}>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-name">Email</Label>
-                                        <Input id="email-login" type="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange} required={true} />
+                                        <Input
+                                            id="email-login"
+                                            type="email"
+                                            placeholder="Email"
+                                            value={loginData.email}
+                                            onChange={handleLoginChange}
+                                            required={true}
+                                        />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-name">Password</Label>
-                                        <Input id="password-login" type="password" placeholder="Password" value={loginData.password} onChange={handleLoginChange} required={true} />
+                                        <Input
+                                            id="password-login"
+                                            type="password"
+                                            placeholder="Password"
+                                            value={loginData.password}
+                                            onChange={handleLoginChange}
+                                            required={true}
+                                        />
                                     </div>
                                 </form>
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                < SubmitButton variant={"login"} size={"default"} type="submit" form="formLogin" />
+                                <SubmitButton
+                                    variant={'login'}
+                                    size={'default'}
+                                    type="submit"
+                                    form="formLogin"
+                                />
                             </CardFooter>
                         </TabsContent>
                         {/* --- Register tab --- */}
@@ -150,28 +171,65 @@ export function AnimateTabsDemo() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <form className="grid gap-6" id="formRegister" onSubmit={submitRegister}>
+                                <form
+                                    className="grid gap-6"
+                                    id="formRegister"
+                                    onSubmit={submitRegister}
+                                >
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-current">Name</Label>
-                                        <Input id="name-register" type="text" placeholder="Name" value={registerData.name} onChange={handleRegisterChange} required={true} />
+                                        <Input
+                                            id="name-register"
+                                            type="text"
+                                            placeholder="Name"
+                                            value={registerData.name}
+                                            onChange={handleRegisterChange}
+                                            required={true}
+                                        />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Last-name</Label>
-                                        <Input id="firstname-register" type="text" placeholder="Firstname" value={registerData.firstname} onChange={handleRegisterChange} required={true} />
+                                        <Input
+                                            id="firstname-register"
+                                            type="text"
+                                            placeholder="Firstname"
+                                            value={registerData.firstname}
+                                            onChange={handleRegisterChange}
+                                            required={true}
+                                        />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Email</Label>
-                                        <Input id="email-register" type="email" placeholder="Email" value={registerData.email} onChange={handleRegisterChange} required={true} />
+                                        <Input
+                                            id="email-register"
+                                            type="email"
+                                            placeholder="Email"
+                                            value={registerData.email}
+                                            onChange={handleRegisterChange}
+                                            required={true}
+                                        />
                                     </div>
                                     <div className="grid gap-3">
                                         <Label htmlFor="tabs-demo-new">Password</Label>
-                                        <Input id="password-register" type="password" placeholder="Password" value={registerData.password} onChange={handleRegisterChange} required={true} />
+                                        <Input
+                                            id="password-register"
+                                            type="password"
+                                            placeholder="Password"
+                                            value={registerData.password}
+                                            onChange={handleRegisterChange}
+                                            required={true}
+                                        />
                                     </div>
                                 </form>
                             </CardContent>
                             <CardFooter>
                                 {/* l'élément ripple est le bouton login*/}
-                                <SubmitButton variant={"register"} size={"default"}  type={"submit"} form={"formRegister"} />
+                                <SubmitButton
+                                    variant={'register'}
+                                    size={'default'}
+                                    type={'submit'}
+                                    form={'formRegister'}
+                                />
                             </CardFooter>
                         </TabsContent>
                     </TabsContents>
@@ -184,7 +242,7 @@ export function AnimateTabsDemo() {
 /*création star background*/
 export const StarsBackgroundDemo = () => {
     const { resolvedTheme } = useTheme();
-    const starColor =resolvedTheme === "dark" ? "#FFF" : "#000";
+    const starColor = resolvedTheme === 'dark' ? '#FFF' : '#000';
 
     return (
         <StarsBackground
@@ -192,22 +250,17 @@ export const StarsBackgroundDemo = () => {
             starColor={starColor}
             className={cn(
                 'absolute inset-0 flex items-center justify-center rounded-xl',
-                'dark:bg-[radial-gradient(ellipse_at_bottom,_#262626_0%,_#000_100%)] bg-[radial-gradient(ellipse_at_bottom,_#f5f5f5_0%,_#fff_100%)]',
+                'dark:bg-[radial-gradient(ellipse_at_bottom,_#262626_0%,_#000_100%)] bg-[radial-gradient(ellipse_at_bottom,_#f5f5f5_0%,_#fff_100%)]'
             )}
         />
     );
 };
 
 /* création du bouton ripple*/
-export function SubmitButton({
-                                             variant,
-                                             size,
-                                            type,
-                                            form,
-                                         }: RippleButtonDemoProps) {
+export function SubmitButton({ variant, size, type, form }: RippleButtonDemoProps) {
     return (
-        <RippleButton variant={"default"} size={size} type={type} form={form} >
-            {variant === "login" ? "Login" : "Register"}
+        <RippleButton variant={'default'} size={size} type={type} form={form}>
+            {variant === 'login' ? 'Login' : 'Register'}
             <RippleButtonRipples />
         </RippleButton>
     );
