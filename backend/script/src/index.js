@@ -14,17 +14,17 @@ app.use(bodyParser.json());
 const auth_routes = require("./routes/auth/auth")
 app.use("/", auth_routes);
 
-// HERE ALL ROUTE FOR TODO ACCESS WITH SECURE SYSTEM
-const todos_routes = require("./routes/todos/todos");
-app.use("/todos", verif_token, todos_routes);
+// HERE ALL ROUTE FOR TODO_LIST ACCESS WITH SECURE SYSTEM
+const todos_routes = require("./routes/todos/todos_list");
+app.use("/todo_list", verif_token, todos_routes);
 
 // HERE ALL ROUTE FOR USER ACCESS
 const user_routes = require("./routes/user/user");
 app.use("/user", verif_token, user_routes);
 
-// HERE ALL ROUTE FOR TASK
-const task_routes = require("./routes/todos/task");
-app.use("/tasks", verif_token, task_routes);
+// HERE ALL ROUTE FOR TODO
+const todo_routes = require("./routes/todos/todo");
+app.use("/todos", verif_token, todo_routes);
 
 // HERE ALL ROUTE FOR SHARE
 const share = require("./routes/share/share");

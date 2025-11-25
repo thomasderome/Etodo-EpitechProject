@@ -150,7 +150,7 @@ export default function Todo_page() {
   // LOAD PAGE INFORMATION
   useEffect(() => {
     instance
-      .get('/todos')
+      .get('/todo_list')
       .then((response) => {
         set_todo_data(response.data);
       })
@@ -225,7 +225,7 @@ export default function Todo_page() {
 
     const promise = todo_data.map(async (item) => {
       if (item.id == Number(id_todo)) {
-        const res = await instance.put(`/todos/${id_todo}`, {
+        const res = await instance.put(`/todo_list/${id_todo}`, {
           ...item,
           title: e.currentTarget.textContent,
         });
@@ -260,7 +260,7 @@ export default function Todo_page() {
       /* ADD THE REQUEST IN FUTURE FOR API */
     }
     instance
-      .post('/todos', {
+      .post('/todo_list', {
         title: 'New todo',
         status: 'todo',
       })
@@ -279,7 +279,7 @@ export default function Todo_page() {
     const id_element = e.currentTarget.dataset.id;
 
     await instance
-      .delete(`/todos/${id_element}`)
+      .delete(`/todo_list/${id_element}`)
       .then(() => {
         const filter = [...todo_data.filter((item) => String(item.id) !== id_element)];
         set_todo_data([...filter]);
@@ -298,7 +298,7 @@ export default function Todo_page() {
     if (title && id) {
       const mode = e.currentTarget.dataset?.mode === '0';
       console.log(mode, e.currentTarget.dataset?.mode);
-      instance.get(`/tasks/${id}`).then((res) => {
+      instance.get(`/todos/${id}`).then((res) => {
         set_task_data({
           header: {
             id_todo: id,
@@ -323,11 +323,11 @@ export default function Todo_page() {
     if (task_data) {
       const date = new Date();
       await instance
-        .post('/tasks', {
+        .post('/todos', {
           title: 'New task',
           description: 'New description',
           due_time: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
-          todo_id: task_data.header.id_todo,
+          todo_list_id: task_data.header.id_todo,
         })
         .then((res) => {
           set_task_data({
@@ -369,7 +369,7 @@ export default function Todo_page() {
       return;
     }
     await instance
-      .put(`/tasks/${taskId}`, {
+      .put(`/todos/${taskId}`, {
         title: task.title,
         description: task.description,
         due_time: task.due_time.split('T')[0],
@@ -411,7 +411,7 @@ export default function Todo_page() {
   async function changeTaskState(e: React.MouseEvent<HTMLButtonElement>) {
     const currentTarget = e.currentTarget;
     if (task_data) {
-      await instance.patch(`/tasks/check/${e.currentTarget.dataset.id}`).then((res) => {
+      await instance.patch(`/todos/check/${e.currentTarget.dataset.id}`).then((res) => {
         const newData = task_data?.task_list.map((task) => {
           if (currentTarget.dataset.id === String(task.id)) {
             return res.data;
@@ -453,7 +453,7 @@ export default function Todo_page() {
 
     if (task_data) {
       await instance
-        .delete(`/tasks/${taskId}`)
+        .delete(`/todos/${taskId}`)
         .then((res) => {
           const filter = task_data.task_list.filter((item) => String(item.id) !== taskId);
           set_task_data({
