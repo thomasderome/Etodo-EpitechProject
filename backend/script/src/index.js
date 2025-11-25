@@ -1,14 +1,21 @@
 require("dotenv").config({path: "../.env"});
 const bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
 const express = require("express");
 const verif_token = require("./middleware/auth");
-const app = express();
 const cors = require("cors");
 const port = process.env.PORT;
+const http = require("node:http");
+
+const app = express();
+const server = http.createServer(app);
+
+const io_setup = require("./socket/index");
+const io = io_setup(server);
+app.set("io", io);
 
 app.use(cors());
 app.use(bodyParser.json());
-
 
 // LOAD AUTH ROUTE
 const auth_routes = require("./routes/auth/auth")
@@ -39,7 +46,7 @@ const notFound = require("./middleware/notFound.js");
 app.use(notFound);
 
 // RUN THE SERVER ON SPECIFIC CODE
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server started on port ${port}`);
 })
 

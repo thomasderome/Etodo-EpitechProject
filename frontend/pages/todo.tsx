@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import instance from '@/lib/axios';
+import instance from "@/lib/axios";
+import { io, Socket } from 'socket.io-client';
 
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
@@ -130,6 +131,7 @@ interface Share_Setting_Type {
 
 export default function Todo_page() {
     const router = useRouter();
+    const [socket, set_socket] = useState<Socket | null>(null);
 
     const isMobile = useIsMobile();
 
@@ -149,6 +151,14 @@ export default function Todo_page() {
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
+        instance.get("/todos").then(response => {
+            set_todo_data(response.data);
+        }).catch((e) => {
+            if (e.status === 403) {
+                localStorage.removeItem("token");
+                router.push("/login");
+            }
+        });
         instance
             .get('/todo_list')
             .then((response) => {
@@ -163,6 +173,9 @@ export default function Todo_page() {
                 }
             });
 
+        instance.get("/user").then(response => {
+            set_user_data(response.data);
+        }).catch(() => {});
         instance
             .get('/user')
             .then((response) => {
@@ -172,15 +185,63 @@ export default function Todo_page() {
                 alert('Failed to load user data');
             });
 
-        instance
-            .get('/share')
-            .then((res) => {
-                set_share_data(res.data);
-            })
-            .catch(() => {
-                alert('Failed to load share todo');
-            });
+        instance.get("/share").then(res => {
+            set_share_data(res.data);
+        }).catch(() => {})
+
+        const socket_instance = io('http://127.0.0.1:3001', {
+            auth: {
+                token: localStorage.getItem("token"),
+            }
+        });
+
+        socket_instance.on("connect", () => console.log("Websocket connected"));
+        socket_instance.on("disconnect", () => console.log("Websocket disconnected"));
+        socket_instance.on("task_notification", (data) => {
+            if (data.type === "ADD") {
+                set_task_data((prev) => {
+                    if (!prev) return null;
+                    return {
+                        ...prev,
+                        task_list: [...prev?.task_list, data.data]
+                    }
+                })
+            } else if (data.type === "REMOVE") {
+                set_task_data((prev) => {
+                    if (!prev) return null;
+                    const filter = prev.task_list.filter((item) => String(item.id) !== data.data.id);
+                    return {
+                        ...prev,
+                        task_list: filter
+                    }
+                })
+            } else if (data.type === "UPDATE") {
+                set_task_data((prev) => {
+                    if (!prev) return null;
+                    console.log(data.data.id)
+                    const newData = prev.task_list.map((item) => {
+                        if (data.data.id === item.id) return data.data;
+                        else return item;
+                    })
+
+                    return {
+                        ...prev,
+                        task_list: newData
+                    }
+                })
+            }
+        });
+
+        set_socket(socket_instance);
+        return () => {
+            socket_instance.disconnect();
+        }
     }, []);
+
+    useEffect(() => {
+        const todo_id = task_data?.header.id_todo;
+        if (todo_id !== null) socket?.emit('join_todo', todo_id);
+    }, [task_data?.header.id_todo])
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
     const focus_item = React.useRef<HTMLSpanElement>(null);
@@ -408,7 +469,7 @@ export default function Todo_page() {
         }
     }
 
-    async function changeTaskState(e: React.MouseEvent<HTMLButtonElement>) {
+    async function changeTaskState(e: React.ChangeEvent<HTMLInputElement>) {
         const currentTarget = e.currentTarget;
         if (task_data) {
             await instance.patch(`/todos/check/${e.currentTarget.dataset.id}`).then((res) => {
@@ -574,6 +635,7 @@ export default function Todo_page() {
                     alert('Failed to change mode');
                 });
         }
+
     }
     const isReadOnly = task_data?.share?.readonly ?? false;
 
@@ -997,6 +1059,9 @@ export default function Todo_page() {
                                                 readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
+                                            <AccordionTrigger showArrow={true} className="flex-1 justify-start">
+                                            </AccordionTrigger>
+                                            {isReadOnly ? undefined : <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>}
 
                                             {isMobile ? (
                                                 <div className="flex flex-col sm:flex-row w-full gap-2 sm:items-center">
