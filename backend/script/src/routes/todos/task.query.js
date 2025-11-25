@@ -3,7 +3,7 @@ const { pool} = require('../../config/db');
 async function get_all_task(todo_id, user_id) {
     let [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id WHERE task.todo_id = ? AND todo.user_id = ?", [todo_id, user_id]);
 
-    if (result.length === 0) [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id JOIN shared_todo ON shared_todo.todo_list_id=todo.id WHERE task.todo_id = ? AND shared_todo.user_id", [todo_id, user_id]);
+    if (result.length === 0) [result] = await pool.query("SELECT task.* FROM task JOIN todo ON todo.id=task.todo_id JOIN shared_todo ON shared_todo.todo_list_id=todo.id WHERE task.todo_id = ? AND shared_todo.user_id=?", [todo_id, user_id]);
     return result;
 }
 
@@ -54,10 +54,16 @@ async function ratio_todo_verif(task_id) {
 }
 
 async function task_delete(task_id, user_id){
-    const [verif] = await pool.query("SELECT * FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=? AND todo.user_id=?", [task_id, user_id]);
+    const [verif] = await pool.query("SELECT todo.id FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=? AND todo.user_id=?", [task_id, user_id]);
     if (!verif[0]) {return null}
 
     const [result] = await pool.query("DELETE FROM task WHERE id = ?", [task_id]);
-    return result[0];
+    return verif[0];
 }
-module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task, task_delete };
+
+async function get_todoid_taskid(task_id) {
+    const [id] = await pool.query("SELECT todo.id FROM task JOIN todo ON todo.id=task.todo_id WHERE task.id=?", [task_id])
+    return id[0];
+}
+
+module.exports = { get_all_task, create_task, change_state_task, ratio_todo_verif, update_task, task_delete, get_todoid_taskid };
