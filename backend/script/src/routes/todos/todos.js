@@ -19,14 +19,12 @@ router.get("/:id", async(req , res ) => {
 })
 
 router.post("/", async(req, res) =>{
-    const {title, description, due_time, status} = req.body;
-    if (typeof title !== "string" || typeof description !== "string" || typeof due_time !== "string"  ||typeof status !== "string" || !title || !description || !due_time || !status) {
+    const {title, status} = req.body;
+    if (typeof title !== "string" || typeof status !== "string" || !title || !status) {
         throw new TypeError( );
     }
     const newTodo = await createTodo({
             title: title,
-            description: description,
-            due_time: due_time,
             user_id : req.user_id,
             status: status
     })
@@ -36,13 +34,11 @@ router.post("/", async(req, res) =>{
 })
 
 router.put("/:id", async(req, res) =>{
-    const {title, description, due_time, status} = req.body;
+    const {title, status} = req.body;
     const todoId = req.params.id;
 
     const updatetodo = await updateTodo({
         title: title,
-        description: description,
-        due_time: due_time,
         user_id : req.user_id,
         status: status,
         todo_id: todoId
@@ -57,7 +53,7 @@ router.put("/:id", async(req, res) =>{
 })
 
 router.delete("/:id", async(req, res) =>{
-    const todoDelete = await deleteTodo(req.params.id)
+    const todoDelete = await deleteTodo(req.params.id, req.user_id)
     if (todoDelete) {
         res.send({msg: `Successfully deleted record number : ${req.params.id}`});
     } else {
