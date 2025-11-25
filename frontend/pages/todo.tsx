@@ -790,29 +790,50 @@ export default function Todo_page() {
                                                 readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
-                                            <div className="flex flex-col sm:flex-row w-full">
-                                                <Input
-                                                    className="w-full sm:w-40 min-w-30 mt-3 mb-2"
-                                                    type="date"
-                                                    value={task_element.created_at.split("T")[0]}
-                                                    readOnly
-                                                />
-                                                {/* INPUT OF DATE */}
-                                                <Input
-                                                    type="date"
-                                                    data-id={task_element.id}
-                                                    value={task_element.due_time.split("T")[0]}
-                                                    onBlur={isReadOnly ? undefined : sendChangeValue}
-                                                    onChange={changeTaskDueTime}
-                                                    className="w-full sm:w-45 min-w-35 mb-3"
-                                                />
-                                            </div>
+
+                                            {isMobile ? (
+                                                <div className="flex flex-col sm:flex-row w-full gap-2 sm:items-center">
+                                                    <Input
+                                                        className="w-full sm:w-40 min-w-30 mt-3 sm:mt-0"
+                                                        type="date"
+                                                        value={task_element.created_at.split("T")[0]}
+                                                        readOnly
+                                                    />
+
+                                                    {/* INPUT OF DATE */}
+                                                    <Input
+                                                        type="date"
+                                                        data-id={task_element.id}
+                                                        value={task_element.due_time.split("T")[0]}
+                                                        onBlur={isReadOnly ? undefined : sendChangeValue}
+                                                        onChange={changeTaskDueTime}
+                                                        className="w-full sm:w-45 min-w-35 mb-3 sm:mb-0"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <Input
+                                                        className="w-40 min-w-30"
+                                                        type="date"
+                                                        value={task_element.created_at.split("T")[0]}
+                                                        readOnly
+                                                    />
+                                                    <Input
+                                                        type="date"
+                                                        data-id={task_element.id}
+                                                        value={task_element.due_time.split("T")[0]}
+                                                        onBlur={isReadOnly ? undefined : sendChangeValue}
+                                                        onChange={changeTaskDueTime}
+                                                        className="w-45 min-w-35"
+                                                    />
+                                                </>
+                                            )}
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
                                             <Trash2 className="text-red-600 ml-auto min-w-5 " animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
                                         </div>
                                         {/* DESCRIPTION PANEL */}
-                                        <AccordionPanel className="p-2 pl-12 text-sm text-gray-500">
+                                        <AccordionPanel className="p-2 pl-12 text-sm text-white">
                                             <Textarea
                                                 data-id={task_element.id}
                                                 value={task_element.description}
