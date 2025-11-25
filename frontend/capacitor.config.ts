@@ -4,9 +4,9 @@ const config: CapacitorConfig = {
   appId: 'fr.etodo.com',
   appName: 'etodo',
   webDir: 'out',
-    server: {
-        androidScheme: 'http'
-    }
+  server: {
+    androidScheme: 'http',
+  },
 };
 
 export default config;
