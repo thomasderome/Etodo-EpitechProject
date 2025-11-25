@@ -131,7 +131,7 @@ interface Share_Setting_Type {
 
 export default function Todo_page() {
     const router = useRouter();
-    const [socket, set_socket] = useState<Socket | null>(null);
+    const [socket, set_socket] = React.useState<Socket | null>(null);
 
     const isMobile = useIsMobile();
 
@@ -197,7 +197,7 @@ export default function Todo_page() {
 
         socket_instance.on("connect", () => console.log("Websocket connected"));
         socket_instance.on("disconnect", () => console.log("Websocket disconnected"));
-        socket_instance.on("task_notification", (data) => {
+        socket_instance.on("todo_notif", (data) => {
             if (data.type === "ADD") {
                 set_task_data((prev) => {
                     if (!prev) return null;
@@ -402,6 +402,7 @@ export default function Todo_page() {
     // FUNCTION THAT CHANGE VALUE
     function changeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
         e.currentTarget.dataset.update = 'true';
+
         const newData = task_data?.task_list.map((task) => {
             if (e.currentTarget.dataset.id === String(task.id)) {
                 return { ...task, title: e.currentTarget.value };
@@ -469,7 +470,7 @@ export default function Todo_page() {
         }
     }
 
-    async function changeTaskState(e: React.ChangeEvent<HTMLInputElement>) {
+    async function changeTaskState(e: React.MouseEvent<HTMLButtonElement>) {
         const currentTarget = e.currentTarget;
         if (task_data) {
             await instance.patch(`/todos/check/${e.currentTarget.dataset.id}`).then((res) => {
@@ -515,14 +516,14 @@ export default function Todo_page() {
         if (task_data) {
             await instance
                 .delete(`/todos/${taskId}`)
-                .then((res) => {
+                .then(() => {
                     const filter = task_data.task_list.filter((item) => String(item.id) !== taskId);
                     set_task_data({
                         header: { ...task_data.header },
                         task_list: filter,
                     });
                 })
-                .catch((err) => {
+                .catch(() => {
                     alert('Error deleting task');
                 });
         }
@@ -1061,7 +1062,6 @@ export default function Todo_page() {
                                             />
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
-                                            {isReadOnly ? undefined : <Trash2 className="text-red-600 ml-auto" animateOnHover data-id={task_element.id} onClick={deleteTask}/>}
 
                                             {isMobile ? (
                                                 <div className="flex flex-col sm:flex-row w-full gap-2 sm:items-center">
@@ -1112,12 +1112,15 @@ export default function Todo_page() {
                                                 showArrow={true}
                                                 className="flex-1 justify-start"
                                             ></AccordionTrigger>
-                                            <Trash2
+
+                                            {isReadOnly ? undefined :
+                                                <Trash2
                                                 className="text-red-600 ml-auto min-w-5 "
                                                 animateOnHover
                                                 data-id={task_element.id}
                                                 onClick={isReadOnly ? undefined : deleteTask}
-                                            />
+                                            />}
+
                                         </div>
                                         {/* DESCRIPTION PANEL */}
                                         <AccordionPanel className="p-2 pl-12 text-sm text-white">
