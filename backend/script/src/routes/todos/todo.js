@@ -3,7 +3,10 @@ const router = express.Router();
 const { get_all_todo, create_todo, change_state_todo, ratio_todo_list_verif, update_todo, todo_delete } = require('./todo.query.js');
 
 router.get('/:id_todo_list', async (req, res) => {
-    const todo_list = await get_all_todo(req.params.id_todo_list, req.user_id);
+    const {id_todo_list} = req.params;
+    if (!id_todo_list || typeof id_todo_list !== "string") throw new TypeError()
+
+    const todo_list = await get_all_todo(id_todo_list, req.user_id);
 
     res.send(todo_list);
 })
