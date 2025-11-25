@@ -5,60 +5,17 @@ const express = require("express");
 const verif_token = require("./middleware/auth");
 const cors = require("cors");
 const port = process.env.PORT;
-
 const http = require("node:http");
-const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-    }
-})
 
+const io_setup = require("./socket/index");
+const io = io_setup(server);
+app.set("io", io);
 
 app.use(cors());
 app.use(bodyParser.json());
-
-io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-
-    if (!token) next(new Error("Token is not valid"));
-
-    try {
-        const verify_token = jwt.verify(token, process.env.SECRET);
-
-        socket.user_id = verify_token.id;
-        if (verify_token) next();
-    } catch { next(new Error("Token is not valid")); }
-})
-
-io.on("connection", (socket) => {
-    console.log(`The user ${socket.user_id} connected on ${socket.id}`);
-    socket.join(`user:${socket.user_id}`);
-
-    socket.on("disconnect", () => {
-        console.log(`Disconnected from ${socket.id}`);
-    })
-
-    socket.on("join_todo", (todo_id) => {
-        socket.rooms.forEach((room) => {
-            if (room.startsWith("todo:")) {
-                console.log(room)
-                socket.leave(room);
-                return;
-            }
-        });
-
-        socket.join(`todo_id:${todo_id}`);
-        io.to(`user:${socket.user_id}`).emit(`notification`, `You are join this todo ${todo_id}`);
-    })
-
-})
-
-
-app.set("io", io);
 
 // LOAD AUTH ROUTE
 const auth_routes = require("./routes/auth/auth")
