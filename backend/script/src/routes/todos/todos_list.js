@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {displayTodos, viewTodo, createTodo, updateTodo, deleteTodo} = require("./todos.query.js")
+const {displayTodos, viewTodo, createTodo, updateTodo, deleteTodo} = require("./todos_list.query.js")
 
 router.get("/", async(req , res ) => {
     const todos = await displayTodos(req.user_id);
