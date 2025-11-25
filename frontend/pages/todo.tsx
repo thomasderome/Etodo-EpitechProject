@@ -179,7 +179,40 @@ export default function Todo_page() {
 
         socket_instance.on("connect", () => console.log("Websocket connected"));
         socket_instance.on("disconnect", () => console.log("Websocket disconnected"));
-        socket_instance.on("notification", (data) => console.log("Notification: ", data));
+        socket_instance.on("task_notification", (data) => {
+            if (data.type === "ADD") {
+                set_task_data((prev) => {
+                    if (!prev) return null;
+                    return {
+                        ...prev,
+                        task_list: [...prev?.task_list, data.data]
+                    }
+                })
+            } else if (data.type === "REMOVE") {
+                set_task_data((prev) => {
+                    if (!prev) return null;
+                    const filter = prev.task_list.filter((item) => String(item.id) !== data.data.id);
+                    return {
+                        ...prev,
+                        task_list: filter
+                    }
+                })
+            } else if (data.type === "UPDATE") {
+                set_task_data((prev) => {
+                    if (!prev) return null;
+                    console.log(data.data.id)
+                    const newData = prev.task_list.map((item) => {
+                        if (data.data.id === item.id) return data.data;
+                        else return item;
+                    })
+
+                    return {
+                        ...prev,
+                        task_list: newData
+                    }
+                })
+            }
+        });
 
         set_socket(socket_instance);
         return () => {
