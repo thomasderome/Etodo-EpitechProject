@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { get_all_todo, create_todo, change_state_todo, ratio_todo_list_verif, update_todo, todo_delete } = require('./todo.query.js');
+const { get_all_todo, create_todo, change_state_todo, ratio_todo_list_verif, update_todo, todo_delete,get_todolist_id } = require('./todo.query.js');
 
 router.get('/:id_todo_list', async (req, res) => {
     const {id_todo_list} = req.params;
@@ -26,6 +26,10 @@ router.post('/', async (req, res) => {
 
     if (response === null) return res.status(403).send();
     await ratio_todo_list_verif(response.id)
+
+    const io = req.app.get("io");
+    io.to(`todo_id:${todo_list_id}`).except(`user:${req.user_id}`).emit('todo_notif', {type: "ADD", data: response})
+
     res.status(200).send(response);
 })
 
@@ -45,6 +49,10 @@ router.put('/:todo_id', async (req, res) => {
 
     if (!result) return res.status(403).send();
 
+    const io = req.app.get("io");
+    const todo_list_id = await get_todolist_id(result.id);
+    io.to(`todo_id:${todo_list_id}`).except(`user:${req.user_id}`).emit('todo_notif', {type: "UPDATE", data: result})
+
     return res.send(result);
 })
 
@@ -55,15 +63,28 @@ router.patch('/check/:todo_id', async (req, res) => {
     const todo = await change_state_todo(todo_id, req.user_id);
     if (!todo) return res.status(403).send();
 
-    await ratio_todo_list_verif(todo_id)
+    await ratio_todo_list_verif(todo_id);
+
+    const io = req.app.get("io");
+    const todo_list_id = await get_todolist_id(todo.id);
+    io.to(`todo_id:${todo_list_id}`).except(`user:${req.user_id}`).emit('todo_notif', {type: "UPDATE", data: todo})
 
     res.send(todo);
 })
 
 router.delete('/:todo_id', async (req, res) => {
-    const todoDelete = await todo_delete(req.params.todo_id, req.user_id);
+    const todo_id = Number(req.params.todo_id)
+    if (typeof todo_id !== "number" || !req.params.todo_id) throw new TypeError();
 
-    res.send(todoDelete);
+    const todo_list_id = await get_todolist_id(todo_id);
+    const todoDelete = await todo_delete(todo_id, req.user_id);
+
+    if (todoDelete) res.status(400).send("Bad requests");
+
+    const io = req.app.get("io");
+    io.to(`todo_id:${todo_list_id}`).except(`user:${req.user_id}`).emit('todo_notif', {type: "REMOVE", data: {id: req.params.todo_id}})
+
+    res.send({"msg": `Todo id:${todo_id} deleted`});
 })
 
 module.exports = router;

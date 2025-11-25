@@ -59,4 +59,9 @@ async function todo_delete(todo_id, user_id){
     const [result] = await pool.query("DELETE FROM todo WHERE id = ?", [todo_id]);
     return result[0];
 }
-module.exports = { get_all_todo, create_todo, change_state_todo, ratio_todo_list_verif, update_todo, todo_delete };
+
+async function get_todolist_id(todo_id) {
+    const [id] = await pool.query("SELECT todo_list.id FROM todo JOIN todo_list ON todo_list.id=todo.todo_list_id WHERE todo.id=?", [todo_id])
+    return id[0].id
+}
+module.exports = { get_all_todo, create_todo, change_state_todo, ratio_todo_list_verif, update_todo, todo_delete, get_todolist_id };
