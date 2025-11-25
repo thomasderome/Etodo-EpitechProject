@@ -706,7 +706,7 @@ export default function Todo_page() {
                                     ): null }
 
                                     <DropdownMenu modal={false}>
-                                        <DropdownMenuTrigger className="outline-none ml-auto" onFocus={(e) => {e.preventDefault()}}><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
+                                        <DropdownMenuTrigger className="outline-none ml-auto mr-4" onFocus={(e) => {e.preventDefault()}}><Ellipsis className="w-4" animateOnHover /></DropdownMenuTrigger>
 
                                         <DropdownMenuContent side={isMobile ? 'bottom' : 'left'} align="start" onCloseAutoFocus={(e) => {e.preventDefault();}}>
                                             <DropdownMenuLabel>Todo Interaction</DropdownMenuLabel>
@@ -790,21 +790,23 @@ export default function Todo_page() {
                                                 readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
-                                            <Input
-                                                className="w-40 min-w-30"
-                                                type="date"
-                                                value={task_element.created_at.split("T")[0]}
-                                                readOnly
-                                            />
-                                            {/* INPUT OF DATE */}
-                                            <Input
-                                                type="date"
-                                                data-id={task_element.id}
-                                                value={task_element.due_time.split("T")[0]}
-                                                onBlur={isReadOnly ? undefined : sendChangeValue}
-                                                onChange={changeTaskDueTime}
-                                                className="w-45 min-w-35"
-                                            />
+                                            <div className="flex flex-col sm:flex-row w-full">
+                                                <Input
+                                                    className="w-full sm:w-40 min-w-30 mt-3 mb-2"
+                                                    type="date"
+                                                    value={task_element.created_at.split("T")[0]}
+                                                    readOnly
+                                                />
+                                                {/* INPUT OF DATE */}
+                                                <Input
+                                                    type="date"
+                                                    data-id={task_element.id}
+                                                    value={task_element.due_time.split("T")[0]}
+                                                    onBlur={isReadOnly ? undefined : sendChangeValue}
+                                                    onChange={changeTaskDueTime}
+                                                    className="w-full sm:w-45 min-w-35 mb-3"
+                                                />
+                                            </div>
                                             <AccordionTrigger showArrow={true} className="flex-1 justify-start">
                                             </AccordionTrigger>
                                             <Trash2 className="text-red-600 ml-auto min-w-5 " animateOnHover data-id={task_element.id} onClick={isReadOnly ? undefined : deleteTask}/>
