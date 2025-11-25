@@ -74,7 +74,7 @@ router.delete('/:task_id', async (req, res) => {
 
     const io = req.app.get('io');
     io.to(`todo_id:${taskDelete.id}`).except(`user_id:${req.user_id}`).emit(`task_notification`, {type: "REMOVE", data: {id: req.params.task_id}})
-    res.send({"msg": "Task deleted"});
+    res.send({"msg": `Task deleted ${req.params.task_id}`});
 })
 
 module.exports = router;
