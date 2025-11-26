@@ -1108,11 +1108,6 @@ export default function Todo_page() {
                                                     />
                                                 </>
                                             )}
-                                            <AccordionTrigger
-                                                showArrow={true}
-                                                className="flex-1 justify-start"
-                                            ></AccordionTrigger>
-
                                             {isReadOnly ? undefined :
                                                 <Trash2
                                                 className="text-red-600 ml-auto min-w-5 "
