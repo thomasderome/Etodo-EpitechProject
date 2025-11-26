@@ -22,7 +22,7 @@ async function change_state_todo(todo_id, user_id, todo_list_id) {
     if (!verif[0]) verif = await pool.query("SELECT user_id FROM shared_todo WHERE todo_list_id = ? AND user_id = ? AND mode=1", [todo_list_id, user_id]);
     if (!verif[0]) {return null}
 
-    await pool.query("UPDATE todo SET status=IF(status='todo', 'done', 'todo') WHERE id = ?", [todo_id]);
+    await pool.query("UPDATE todo SET status=CASE WHEN status='todo' THEN 'in progress' WHEN status='in progress' THEN 'done' ELSE 'todo' END WHERE id = ?", [todo_id]);
     const [result] = await pool.query("SELECT * FROM todo WHERE id = ?", [todo_id]);
     return result[0];
 }
@@ -45,7 +45,7 @@ async function ratio_todo_list_verif(todo_id) {
     let status = "todo";
     let finish = true;
     result.map(todo => {
-        if (todo.status === "done") {
+        if (todo.status === "done" || todo.status === "in progress") {
             status = "in progress";
         } else if (todo.status === "todo") {
             finish = false;

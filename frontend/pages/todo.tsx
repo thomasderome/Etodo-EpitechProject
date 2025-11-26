@@ -472,6 +472,21 @@ export default function Todo_page() {
 
     async function changeTaskState(e: React.MouseEvent<HTMLButtonElement>) {
         const currentTarget = e.currentTarget;
+
+        if (task_data) {
+            const newData = task_data?.task_list.map((task) => {
+                if (currentTarget.dataset.id === String(task.id) && task.status === "in progress") {
+                    return {...task, status: "todo"};
+                } else {
+                    return task;
+                }
+            });
+            set_task_data({
+                header: task_data.header,
+                task_list: newData,
+            });
+        }
+
         if (task_data) {
             await instance.patch(`/todos/check/${e.currentTarget.dataset.id}`).then((res) => {
                 const newData = task_data?.task_list.map((task) => {
@@ -1036,6 +1051,7 @@ export default function Todo_page() {
                                             <Checkbox
                                                 size="default"
                                                 data-id={task_element.id}
+                                                indeterminate={task_element.status === 'in progress'}
                                                 checked={task_element.status === 'done'}
                                                 onClick={changeTaskState}
                                                 disabled={isReadOnly}
