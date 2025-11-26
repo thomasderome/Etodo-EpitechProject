@@ -33,7 +33,7 @@ import { LogOut } from '@/components/animate-ui/icons/log-out';
 import { Settings } from '@/components/animate-ui/icons/settings';
 import { SquarePlus } from '@/components/animate-ui/icons/square-plus';
 import { Ellipsis } from '@/components/animate-ui/icons/ellipsis';
-
+import { CiRead } from "react-icons/ci";
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { User_label } from '@/components/User_label';
@@ -995,6 +995,7 @@ export default function Todo_page() {
                                             >
                                                 {share_element.title}
                                             </span>
+                                            {share_element.mode ? <Brush/> : <CiRead />}
                                         </SidebarMenuButton>
                                         {share_element.status === 'in progress' ? (
                                             <Loader animateOnHover={true} className="w-4 mr-2" />
