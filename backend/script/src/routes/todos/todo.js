@@ -60,13 +60,13 @@ router.patch('/check/:todo_id', async (req, res) => {
     const todo_id = req.params.todo_id;
     if (!todo_id) { throw new TypeError() }
 
-    const todo = await change_state_todo(todo_id, req.user_id);
+    const todo_list_id = await get_todolist_id(todo_id);
+    const todo = await change_state_todo(todo_id, req.user_id, todo_list_id);
     if (!todo) return res.status(403).send();
 
     await ratio_todo_list_verif(todo_id);
 
     const io = req.app.get("io");
-    const todo_list_id = await get_todolist_id(todo.id);
     io.to(`todo_id:${todo_list_id}`).except(`user:${req.user_id}`).emit('todo_notif', {type: "UPDATE", data: todo})
 
     res.send(todo);
@@ -77,7 +77,7 @@ router.delete('/:todo_id', async (req, res) => {
     if (typeof todo_id !== "number" || !req.params.todo_id) throw new TypeError();
 
     const todo_list_id = await get_todolist_id(todo_id);
-    const todoDelete = await todo_delete(todo_id, req.user_id);
+    const todoDelete = await todo_delete(todo_id, req.user_id, todo_list_id);
 
     if (todoDelete) res.status(400).send("Bad requests");
 

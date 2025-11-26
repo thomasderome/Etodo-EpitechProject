@@ -17,9 +17,9 @@ async function create_todo(data) {
     return result[0];
 }
 
-async function change_state_todo(todo_id, user_id) {
+async function change_state_todo(todo_id, user_id, todo_list_id) {
     let [verif] = await pool.query("SELECT * FROM todo JOIN todo_list ON todo_list.id=todo.todo_list_id WHERE todo.id=? AND todo_list.user_id=?", [todo_id, user_id]);
-    if (!verif[0]) verif = await pool.query("SELECT user_id FROM shared_todo WHERE todo_list_id = ? AND user_id = ? AND mode=1", [data.todo_list_id, data.user_id]);
+    if (!verif[0]) verif = await pool.query("SELECT user_id FROM shared_todo WHERE todo_list_id = ? AND user_id = ? AND mode=1", [todo_list_id, user_id]);
     if (!verif[0]) {return null}
 
     await pool.query("UPDATE todo SET status=IF(status='todo', 'done', 'todo') WHERE id = ?", [todo_id]);
@@ -55,9 +55,9 @@ async function ratio_todo_list_verif(todo_id) {
     await pool.query("UPDATE todo_list SET status=? WHERE id = ?", [finish ? "done" : status, todo_list_id[0].id]);
 }
 
-async function todo_delete(todo_id, user_id){
+async function todo_delete(todo_id, user_id, todo_list_id){
     let [verif] = await pool.query("SELECT * FROM todo JOIN todo_list ON todo_list.id=todo.todo_list_id WHERE todo.id=? AND todo_list.user_id=?", [todo_id, user_id]);
-    if (!verif[0]) verif = await pool.query("SELECT user_id FROM shared_todo WHERE todo_list_id = ? AND user_id = ? AND mode=1", [data.todo_list_id, data.user_id]);
+    if (!verif[0]) verif = await pool.query("SELECT user_id FROM shared_todo WHERE todo_list_id = ? AND user_id = ? AND mode=1", [todo_list_id, user_id]);
     if (!verif[0]) {return null}
 
     const [result] = await pool.query("DELETE FROM todo WHERE id = ?", [todo_id]);
