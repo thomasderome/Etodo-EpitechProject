@@ -64,6 +64,12 @@ import { useRouter } from 'next/navigation';
 import { ExternalLink } from '@/components/animate-ui/icons/external-link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
+import {
+    AlertDialog, AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogPopup, AlertDialogTitle,
+    AlertDialogTrigger, AlertDialogCancel, AlertDialogAction
+} from "@/components/animate-ui/components/base/alert-dialog";
 
 interface TodoItem {
     id: number;
@@ -144,6 +150,8 @@ export default function Todo_page() {
     const [setting_data, set_setting_data] = React.useState<Setting_type | null>(null);
     const [setting_state, set_setting_state] = React.useState(false);
 
+    const [remove_account_alertdialog, setalertdialog] = React.useState<boolean>(false);
+
     const [share_state, set_share_state] = React.useState<boolean>(false);
     const [share_setting, set_share_setting] = React.useState<Share_Setting_Type>();
     const [share_mode, set_share_mode] = React.useState<boolean>(false);
@@ -169,7 +177,6 @@ export default function Todo_page() {
                     localStorage.removeItem('token');
                     router.push('/login');
                 } else {
-                    alert('Failed to load todo');
                 }
             });
 
@@ -182,7 +189,6 @@ export default function Todo_page() {
                 set_user_data(response.data);
             })
             .catch(() => {
-                alert('Failed to load user data');
             });
 
         instance.get("/share").then(res => {
@@ -515,7 +521,7 @@ export default function Todo_page() {
                 return task;
             }
         });
-        if (task_data && newData) {
+        if (task_data && newData) { 
             set_task_data({
                 header: task_data.header,
                 task_list: newData,
@@ -571,6 +577,16 @@ export default function Todo_page() {
             .catch(() => {
                 alert('Failed for update user information');
             });
+    }
+
+    async function remove_account(e: React.MouseEvent<HTMLButtonElement>) {
+        e.preventDefault();
+        await instance
+            .delete('/user')
+            .then(() => {
+                localStorage.removeItem('token');
+                router.push('/login');
+            })
     }
 
     function open_share_setting(e: React.MouseEvent<HTMLDivElement>) {
@@ -657,6 +673,18 @@ export default function Todo_page() {
 
     return (
         <>
+            <AlertDialog open={remove_account_alertdialog} onOpenChange={() => setalertdialog(false)}>
+                <AlertDialogPopup className="z-[500] ">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to remove your account ?</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={remove_account}>Remove</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogPopup>
+            </AlertDialog>
+
             <Dialog
                 open={setting_state}
                 onClose={() => set_setting_state(false)}
@@ -837,8 +865,7 @@ export default function Todo_page() {
             >
                 <Sidebar collapsible="icon">
                     {/* HEAD SIDEBAR USER */}
-                    <SidebarHeader></SidebarHeader>
-                    <SidebarContent className="ml-2">
+                    <SidebarContent className="ml-2 mt-2">
                         <SidebarMenuItem>
                             <SidebarMenu>
                                 <SidebarMenuItem>
@@ -868,6 +895,7 @@ export default function Todo_page() {
                                             onCloseAutoFocus={(e) => {
                                                 e.preventDefault();
                                             }}
+
                                         >
                                             {/* Add onclick in futur */}
                                             <DropdownMenuGroup>
@@ -881,12 +909,21 @@ export default function Todo_page() {
                                                 </DropdownMenuItem>
 
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={logout}>
+                                                <DropdownMenuItem onClick={logout} variant="destructive">
                                                     <div className="flex align-middle gap-2 ">
                                                         <LogOut className="h-4 w-4 text-red-600 " />
                                                         <span className="text-sm font-semibold text-red-500">
                                                             Logout
                                                         </span>
+                                                    </div>
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuItem variant="destructive" onClick={() => setalertdialog(true)}>
+                                                    <div className="flex align-middle gap-2 ">
+                                                        <Trash2 className="h-4 w-4 text-red-600" />
+                                                        <span className="text-sm font-semibold text-red-500">
+                                                                    Remove account
+                                                                </span>
                                                     </div>
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
@@ -926,13 +963,12 @@ export default function Todo_page() {
                                     >
                                         {todo_element.title}
                                     </span>
+                                    {todo_element.status === 'in progress' ? (
+                                        <Loader animateOnHover={true} className="w-4 mr-2" />
+                                    ) : todo_element.status === 'done' ? (
+                                        <CircleCheck animateOnHover={true} className="w-4 mr-2" />
+                                    ) : null}
                                 </SidebarMenuButton>
-
-                                {todo_element.status === 'in progress' ? (
-                                    <Loader animateOnHover={true} className="w-4 mr-2" />
-                                ) : todo_element.status === 'done' ? (
-                                    <CircleCheck animateOnHover={true} className="w-4 mr-2" />
-                                ) : null}
 
                                 <DropdownMenu modal={false}>
                                     <DropdownMenuTrigger
@@ -1010,16 +1046,16 @@ export default function Todo_page() {
                                             >
                                                 {share_element.title}
                                             </span>
-                                            {share_element.mode ? <Brush/> : <CiRead />}
+                                            {share_element.mode ? <Brush className="w-4" animateOnHover /> : <CiRead />}
+                                            {share_element.status === 'in progress' ? (
+                                                <Loader animateOnHover className="w-4 mr-2" />
+                                            ) : share_element.status === 'done' ? (
+                                                <CircleCheck
+                                                    className="w-4 mr-2"
+                                                    animateOnHover
+                                                />
+                                            ) : null}
                                         </SidebarMenuButton>
-                                        {share_element.status === 'in progress' ? (
-                                            <Loader animateOnHover={true} className="w-4 mr-2" />
-                                        ) : share_element.status === 'done' ? (
-                                            <CircleCheck
-                                                animateOnHover={true}
-                                                className="w-4 mr-2"
-                                            />
-                                        ) : null}
                                     </SidebarMenuItem>
                                 ))}
                             </>
@@ -1028,8 +1064,8 @@ export default function Todo_page() {
                 </Sidebar>
                 <SidebarInset>
                     <header className="">
-                        <div className="flex items-center gap-2 px-4">
-                            <SidebarTrigger className="-ml-1" />
+                        <div className="flex items-center gap-2 px-4 mt-2">
+                            <SidebarTrigger className="-ml-1 " />
                             <Breadcrumb>
                                 <BreadcrumbItem>
                                     {task_data ? task_data.header.title : 'Choose Todo'}
