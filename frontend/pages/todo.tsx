@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import instance from "@/lib/axios";
+import instance from '@/lib/axios';
 import { io, Socket } from 'socket.io-client';
 
 import { Breadcrumb, BreadcrumbItem } from '@/components/ui/breadcrumb';
@@ -11,7 +11,6 @@ import {
     SidebarInset,
     SidebarTrigger,
     Sidebar,
-    SidebarHeader,
     SidebarContent,
     SidebarGroupLabel,
     SidebarMenu,
@@ -33,7 +32,7 @@ import { LogOut } from '@/components/animate-ui/icons/log-out';
 import { Settings } from '@/components/animate-ui/icons/settings';
 import { SquarePlus } from '@/components/animate-ui/icons/square-plus';
 import { Ellipsis } from '@/components/animate-ui/icons/ellipsis';
-import { CiRead } from "react-icons/ci";
+import { CiRead } from 'react-icons/ci';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import { User_label } from '@/components/User_label';
@@ -65,11 +64,15 @@ import { ExternalLink } from '@/components/animate-ui/icons/external-link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
 import {
-    AlertDialog, AlertDialogFooter,
+    AlertDialog,
+    AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogPopup, AlertDialogTitle,
-    AlertDialogTrigger, AlertDialogCancel, AlertDialogAction
-} from "@/components/animate-ui/components/base/alert-dialog";
+    AlertDialogPopup,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/components/animate-ui/components/base/alert-dialog';
 
 interface TodoItem {
     id: number;
@@ -159,14 +162,17 @@ export default function Todo_page() {
 
     // LOAD PAGE INFORMATION
     useEffect(() => {
-        instance.get("/todos").then(response => {
-            set_todo_data(response.data);
-        }).catch((e) => {
-            if (e.status === 403) {
-                localStorage.removeItem("token");
-                router.push("/login");
-            }
-        });
+        instance
+            .get('/todos')
+            .then((response) => {
+                set_todo_data(response.data);
+            })
+            .catch((e) => {
+                if (e.status === 403) {
+                    localStorage.removeItem('token');
+                    router.push('/login');
+                }
+            });
         instance
             .get('/todo_list')
             .then((response) => {
@@ -180,74 +186,81 @@ export default function Todo_page() {
                 }
             });
 
-        instance.get("/user").then(response => {
-            set_user_data(response.data);
-        }).catch(() => {});
         instance
             .get('/user')
             .then((response) => {
                 set_user_data(response.data);
             })
-            .catch(() => {
-            });
+            .catch(() => {});
+        instance
+            .get('/user')
+            .then((response) => {
+                set_user_data(response.data);
+            })
+            .catch(() => {});
 
-        instance.get("/share").then(res => {
-            set_share_data(res.data);
-        }).catch(() => {})
+        instance
+            .get('/share')
+            .then((res) => {
+                set_share_data(res.data);
+            })
+            .catch(() => {});
 
         const socket_instance = io('http://127.0.0.1:3001', {
             auth: {
-                token: localStorage.getItem("token"),
-            }
+                token: localStorage.getItem('token'),
+            },
         });
 
-        socket_instance.on("connect", () => console.log("Websocket connected"));
-        socket_instance.on("disconnect", () => console.log("Websocket disconnected"));
-        socket_instance.on("todo_notif", (data) => {
-            if (data.type === "ADD") {
+        socket_instance.on('connect', () => console.log('Websocket connected'));
+        socket_instance.on('disconnect', () => console.log('Websocket disconnected'));
+        socket_instance.on('todo_notif', (data) => {
+            if (data.type === 'ADD') {
                 set_task_data((prev) => {
                     if (!prev) return null;
                     return {
                         ...prev,
-                        task_list: [...prev?.task_list, data.data]
-                    }
-                })
-            } else if (data.type === "REMOVE") {
+                        task_list: [...prev?.task_list, data.data],
+                    };
+                });
+            } else if (data.type === 'REMOVE') {
                 set_task_data((prev) => {
                     if (!prev) return null;
-                    const filter = prev.task_list.filter((item) => String(item.id) !== data.data.id);
+                    const filter = prev.task_list.filter(
+                        (item) => String(item.id) !== data.data.id
+                    );
                     return {
                         ...prev,
-                        task_list: filter
-                    }
-                })
-            } else if (data.type === "UPDATE") {
+                        task_list: filter,
+                    };
+                });
+            } else if (data.type === 'UPDATE') {
                 set_task_data((prev) => {
                     if (!prev) return null;
-                    console.log(data.data.id)
+                    console.log(data.data.id);
                     const newData = prev.task_list.map((item) => {
                         if (data.data.id === item.id) return data.data;
                         else return item;
-                    })
+                    });
 
                     return {
                         ...prev,
-                        task_list: newData
-                    }
-                })
+                        task_list: newData,
+                    };
+                });
             }
         });
 
         set_socket(socket_instance);
         return () => {
             socket_instance.disconnect();
-        }
+        };
     }, []);
 
     useEffect(() => {
         const todo_id = task_data?.header.id_todo;
         if (todo_id !== null) socket?.emit('join_todo', todo_id);
-    }, [task_data?.header.id_todo])
+    }, [task_data?.header.id_todo]);
 
     // AUTO FOCUS SYSTEM CREATION NEW TODO
     const focus_item = React.useRef<HTMLSpanElement>(null);
@@ -481,8 +494,8 @@ export default function Todo_page() {
 
         if (task_data) {
             const newData: any[] = task_data?.task_list.map((task) => {
-                if (currentTarget.dataset.id === String(task.id) && task.status === "in progress") {
-                    return {...task, status: "todo"};
+                if (currentTarget.dataset.id === String(task.id) && task.status === 'in progress') {
+                    return { ...task, status: 'todo' };
                 } else {
                     return task;
                 }
@@ -521,7 +534,7 @@ export default function Todo_page() {
                 return task;
             }
         });
-        if (task_data && newData) { 
+        if (task_data && newData) {
             set_task_data({
                 header: task_data.header,
                 task_list: newData,
@@ -581,12 +594,10 @@ export default function Todo_page() {
 
     async function remove_account(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
-        await instance
-            .delete('/user')
-            .then(() => {
-                localStorage.removeItem('token');
-                router.push('/login');
-            })
+        await instance.delete('/user').then(() => {
+            localStorage.removeItem('token');
+            router.push('/login');
+        });
     }
 
     function open_share_setting(e: React.MouseEvent<HTMLDivElement>) {
@@ -667,16 +678,20 @@ export default function Todo_page() {
                     alert('Failed to change mode');
                 });
         }
-
     }
     const isReadOnly = task_data?.share?.readonly ?? false;
 
     return (
         <>
-            <AlertDialog open={remove_account_alertdialog} onOpenChange={() => setalertdialog(false)}>
+            <AlertDialog
+                open={remove_account_alertdialog}
+                onOpenChange={() => setalertdialog(false)}
+            >
                 <AlertDialogPopup className="z-[500] ">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to remove your account ?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Are you sure you want to remove your account ?
+                        </AlertDialogTitle>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -895,7 +910,6 @@ export default function Todo_page() {
                                             onCloseAutoFocus={(e) => {
                                                 e.preventDefault();
                                             }}
-
                                         >
                                             {/* Add onclick in futur */}
                                             <DropdownMenuGroup>
@@ -909,7 +923,10 @@ export default function Todo_page() {
                                                 </DropdownMenuItem>
 
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={logout} variant="destructive">
+                                                <DropdownMenuItem
+                                                    onClick={logout}
+                                                    variant="destructive"
+                                                >
                                                     <div className="flex align-middle gap-2 ">
                                                         <LogOut className="h-4 w-4 text-red-600 " />
                                                         <span className="text-sm font-semibold text-red-500">
@@ -918,12 +935,15 @@ export default function Todo_page() {
                                                     </div>
                                                 </DropdownMenuItem>
 
-                                                <DropdownMenuItem variant="destructive" onClick={() => setalertdialog(true)}>
+                                                <DropdownMenuItem
+                                                    variant="destructive"
+                                                    onClick={() => setalertdialog(true)}
+                                                >
                                                     <div className="flex align-middle gap-2 ">
                                                         <Trash2 className="h-4 w-4 text-red-600" />
                                                         <span className="text-sm font-semibold text-red-500">
-                                                                    Remove account
-                                                                </span>
+                                                            Remove account
+                                                        </span>
                                                     </div>
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
@@ -1046,14 +1066,15 @@ export default function Todo_page() {
                                             >
                                                 {share_element.title}
                                             </span>
-                                            {share_element.mode ? <Brush className="w-4" animateOnHover /> : <CiRead />}
+                                            {share_element.mode ? (
+                                                <Brush className="w-4" animateOnHover />
+                                            ) : (
+                                                <CiRead />
+                                            )}
                                             {share_element.status === 'in progress' ? (
                                                 <Loader animateOnHover className="w-4 mr-2" />
                                             ) : share_element.status === 'done' ? (
-                                                <CircleCheck
-                                                    className="w-4 mr-2"
-                                                    animateOnHover
-                                                />
+                                                <CircleCheck className="w-4 mr-2" animateOnHover />
                                             ) : null}
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
@@ -1088,7 +1109,9 @@ export default function Todo_page() {
                                             <Checkbox
                                                 size="default"
                                                 data-id={task_element.id}
-                                                indeterminate={task_element.status === 'in progress'}
+                                                indeterminate={
+                                                    task_element.status === 'in progress'
+                                                }
                                                 checked={task_element.status === 'done'}
                                                 onClick={changeTaskState}
                                                 disabled={isReadOnly}
@@ -1113,8 +1136,10 @@ export default function Todo_page() {
                                                 readOnly={isReadOnly}
                                                 className="w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                                             />
-                                            <AccordionTrigger showArrow={true} className="flex-1 justify-start">
-                                            </AccordionTrigger>
+                                            <AccordionTrigger
+                                                showArrow={true}
+                                                className="flex-1 justify-start"
+                                            ></AccordionTrigger>
 
                                             {isMobile ? (
                                                 <div className="flex flex-col sm:flex-row w-full gap-2 sm:items-center">
@@ -1161,14 +1186,14 @@ export default function Todo_page() {
                                                     />
                                                 </>
                                             )}
-                                            {isReadOnly ? undefined :
+                                            {isReadOnly ? undefined : (
                                                 <Trash2
-                                                className="text-red-600 ml-auto min-w-5 "
-                                                animateOnHover
-                                                data-id={task_element.id}
-                                                onClick={isReadOnly ? undefined : deleteTask}
-                                            />}
-
+                                                    className="text-red-600 ml-auto min-w-5 "
+                                                    animateOnHover
+                                                    data-id={task_element.id}
+                                                    onClick={isReadOnly ? undefined : deleteTask}
+                                                />
+                                            )}
                                         </div>
                                         {/* DESCRIPTION PANEL */}
                                         <AccordionPanel className="p-2 pl-12 text-sm text-white">
