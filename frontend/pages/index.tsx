@@ -1,10 +1,16 @@
 'use client';
 
-import { Button } from '@/components/animate-ui/components/buttons/button';
 import { useRouter } from 'next/router';
+import {useEffect} from "react";
 
 export default function main() {
     const router = useRouter();
+    useEffect(() => {
+        if (localStorage.getItem("token")) {
+            router.push("/todo");
+        } else {
+            router.push('/login')
+        }
+    }, []);
 
-    return <Button onClick={() => router.push('/login')}>Login</Button>;
 }
