@@ -474,7 +474,7 @@ export default function Todo_page() {
         const currentTarget = e.currentTarget;
 
         if (task_data) {
-            const newData = task_data?.task_list.map((task) => {
+            const newData: any[] = task_data?.task_list.map((task) => {
                 if (currentTarget.dataset.id === String(task.id) && task.status === "in progress") {
                     return {...task, status: "todo"};
                 } else {
