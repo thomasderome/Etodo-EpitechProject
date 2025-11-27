@@ -1,4 +1,4 @@
-# 🚀 [Nom de Votre Projet] - E-Todo
+# 🚀 E-Todo
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
