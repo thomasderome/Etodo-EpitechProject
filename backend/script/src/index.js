@@ -1,6 +1,5 @@
 require("dotenv").config({path: "../.env"});
 const bodyParser = require("body-parser");
-const jwt = require("jsonwebtoken");
 const express = require("express");
 const verif_token = require("./middleware/auth");
 const cors = require("cors");
