@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 function generate_token(req, res, user_id) {
     const token = jwt.sign({"id": user_id}, process.env.SECRET);
 
-    res.send({"token": token});
+    res.status(200).send(({"token": token}));
 }
 
 router.post("/register", async(req, res) => {
