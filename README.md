@@ -4,6 +4,10 @@
 
 > Une solution de gestion de tâches collaborative, permettant le partage de listes en temps réel avec gestion des permissions.
 
+## 🇨🇵 Langue
+- [Français](https://github.com/EpitechBachelorPromo2028/B-WEB-101-NCE-1-1-etodo-3/blob/main/README.md)
+- [English](https://github.com/EpitechBachelorPromo2028/B-WEB-101-NCE-1-1-etodo-3/blob/main/README_EN.md)
+
 ## 📋 Table des matières
 
 - [À propos](#-à-propos)
