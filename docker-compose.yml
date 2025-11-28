@@ -38,7 +38,7 @@ services:
 
     volumes:
       - db_etodo:/var/lib/mysql
-      - ./db_script:/docker-entrypoint-initdb.d
+      - ./:/docker-entrypoint-initdb.d
 
 volumes:
   db_etodo:
