@@ -206,7 +206,7 @@ export default function Todo_page() {
             })
             .catch(() => {});
 
-        const host = process.env.HOST_API || 'http://127.0.0.1:3001'
+        const host = process.env.HOST_API || 'http://127.0.0.1:3001';
         const socket_instance = io(host, {
             auth: {
                 token: localStorage.getItem('token'),

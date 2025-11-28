@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 
 import {
     Tabs,
@@ -43,8 +43,8 @@ interface RippleButtonDemoProps {
 export default function LoginPage() {
     const router = useRouter();
     useEffect(() => {
-        if (localStorage.getItem("token")) {
-            router.push("/todo");
+        if (localStorage.getItem('token')) {
+            router.push('/todo');
         }
     }, []);
 
