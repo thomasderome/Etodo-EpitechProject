@@ -3,11 +3,11 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "start": "serve out -l 3000",
+        "start": "node server.js",
         "build": "next build",
         "format": "npx prettier . --write",
         "dev": "next dev",
-        "cap:build": "npm run build && npx cap sync",
+        "cap:build": "dotenv -e ../.env -- next build && npx cap sync",
         "build:android": "npm run cap:build && chmod +x android/gradlew && cd android && ./gradlew assembleDebug"
     },
     "dependencies": {
@@ -37,7 +37,7 @@
         "react-dom": "19.2.0",
         "react-icons": "^5.5.0",
         "serv": "^0.2.4",
-        "serve": "^14.2.5",
+        "serve-handler": "^6.1.6",
         "socket.io-client": "^4.8.1",
         "tailwind-merge": "^3.3.1"
     },
@@ -47,6 +47,7 @@
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "babel-plugin-react-compiler": "1.0.0",
+        "dotenv-cli": "^7.4.2",
         "eslint": "^9",
         "eslint-config-next": "16.0.1",
         "prettier": "3.7.0",
