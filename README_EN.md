@@ -8,14 +8,15 @@
 - [Français](https://github.com/EpitechBachelorPromo2028/B-WEB-101-NCE-1-1-etodo-3/blob/main/README.md)
 - [English](https://github.com/EpitechBachelorPromo2028/B-WEB-101-NCE-1-1-etodo-3/blob/main/README_EN.md)
 
-
 ## 📋 Table of Contents
 
 - [About](#-about)
 - [Tech Stack](#-tech-stack)
 - [Features](#-features)
-- [Prerequisites](#-prerequisites)
-- [Installation and Startup](#-installation-and-startup)
+- [Web Prerequisites](#-web-prerequisites)
+- [Web Installation and Startup](#-web-installation-and-startup)
+- [Android Prerequisites](#-android-prerequisites)
+- [Compile for Android](#-compile-for-android)
 - [Authors](#-authors)
 
 ## 📖 About
@@ -49,7 +50,7 @@
 * **Timeline:** Add a due date for each task.
 * **Actions:** Rename or delete individual tasks.
 
-## ⚙️ Prerequisites
+### ⚙️ Web Prerequisites
 
 Make sure you have installed:
 * [Docker](https://www.docker.com/)
@@ -75,7 +76,7 @@ Create a .env file based on the .env ex.
 docker compose up -d
 ```
 
-## ⚙️ Prerequisites
+### ⚙️ Android Prerequisites
 
 Make sure you have installed:
 * [Docker](https://www.docker.com/)

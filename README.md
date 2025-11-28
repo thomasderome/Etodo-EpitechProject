@@ -13,8 +13,10 @@
 - [À propos](#-à-propos)
 - [Stack Technique](#-stack-technique)
 - [Fonctionnalités](#-fonctionnalités)
-- [Prérequis](#-prérequis)
-- [Installation et Démarrage](#-installation-et-démarrage)
+- [Prérequis Web](#-prérequis-web)
+- [Installation et Démarrage Web](#-installation-et-démarrage-Web)
+- [Prérequis android](#-prérequis-android)
+- [Compiler pour Android](#-compiler-pour-android)
 - [Auteurs](#-auteurs)
 
 ## 📖 À propos
@@ -48,7 +50,7 @@
 * **Timeline :** Ajout de date de d'échéance pour chaque task.
 * **Actions :** Renommer ou supprimer des tâches individuellement.
 
-## ⚙️ Prérequis
+### ⚙️ Prérequis web
 
 Assurez-vous d'avoir installé :
 * [Docker](https://www.docker.com/)
@@ -74,7 +76,7 @@ Créer un .env en se basant sur le .env ex.
 docker compose up -d
 ```
 
-## ⚙️ Prérequis
+### ⚙️ Prérequis android
 
 Assurez-vous d'avoir installé :
 * [Docker](https://www.docker.com/)
