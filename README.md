@@ -50,9 +50,9 @@ Assurez-vous d'avoir installé :
 * [Docker](https://www.docker.com/)
 * [Git](https://git-scm.com/)
 
-## 🚀 Installation et Démarrage
+## 🚀 Installation et Démarrage Web
 
-Suivez ces étapes pour lancer le projet localement.
+Suivez ces étapes pour lancer le projet.
 
 ### 1. Cloner le projet
 ```bash
@@ -69,6 +69,39 @@ Créer un .env en se basant sur le .env ex.
 ```bash
 docker compose up -d
 ```
+
+## ⚙️ Prérequis
+
+Assurez-vous d'avoir installé :
+* [Docker](https://www.docker.com/)
+* [Git](https://git-scm.com/)
+* [Android Studio](https://developer.android.com/studio)]
+
+## 🚀 Compiler pour Android
+Suivez ces étapes pour compiler l'app android
+
+### 1. Cloner le projet
+```bash
+git clone https://github.com/EpitechBachelorPromo2028/B-WEB-101-NCE-1-1-etodo-3.git
+cd B-WEB-101-NCE-1-1-etodo-3
+```
+
+### 2. Setup .env
+
+Créer un .env en se basant sur le .env ex.
+
+### 3. Compiler
+```bash
+cd frontend
+npm i
+npm run build:android
+```
+Le output du build se trouve ici 
+```bash
+cd android/app/build/outputs/apk/debug
+```
+
+> ⚠️ Attention pour le bon fonctionnement de l'application il vous faudrat le docket up et le même .env que pour le docker ⚠️
 
 ## 👥 Auteurs
 Projet réalisé par:
