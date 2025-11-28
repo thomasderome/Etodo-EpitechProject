@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const verif_token = require("./middleware/auth");
 const cors = require("cors");
-const port = process.env.PORT;
+const port = process.env.PORT_EXPRESS | 3001;
 const http = require("node:http");
 
 const app = express();
