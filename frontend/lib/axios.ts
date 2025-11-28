@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const host = process.env.NEXT_PUBLIC_HOST_API || 'http://127.0.0.1:3001';
 const instance = axios.create({
-    baseURL: 'http://localhost:3001',
+    baseURL: host,
     timeout: 10000,
 });
 
