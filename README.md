@@ -107,7 +107,7 @@ Le output du build se trouve ici
 cd android/app/build/outputs/apk/debug
 ```
 
-> ⚠️ Attention pour le bon fonctionnement de l'application il vous faudrat le docket up et le même .env que pour le docker ⚠️
+> ⚠️ Attention pour le bon fonctionnement de l'application il vous faudrat que le docker et l'app android est le meme .env ⚠️
 
 ## 👥 Auteurs
 Projet réalisé par:
